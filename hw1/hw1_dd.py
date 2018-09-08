@@ -18,7 +18,7 @@ OUTDIR = "out"
 
 c_const = 2.99792458e18 #angstroms/sec
 pc_cm = 3.086e18
-
+L_sun = 3.839e33
 
 def jansky_to_erg(j):
     return j * 1.0e-23
@@ -134,6 +134,7 @@ class Star:
         bot = 0.
         #using Tw instead of Tv, but the indexing is the same for v and w in the source (since translated v as c/w)
         #so the Tv[v] == Tw[w] for the v that matches the w
+        #since Jy is a flux density (in frequency) "integrate" (here, sum up) in flux density (frequency)
         for i in range(len(self.v)-1):
              top += 1./self.v[i] * self.Sv[i]*filter.getTw(self.w[i])*(self.v[i+1]-self.v[i])
              bot += 1./self.v[i] * filter.getTw(self.w[i]) * (self.v[i + 1] - self.v[i])
@@ -160,7 +161,7 @@ def prob_2a(filters,star):
     fig = plt.figure(figsize=(8,5))
     plt.title("Zoomed A0V Spectrum and Filters")
     plt.xlabel(r'$\lambda$ [$\AA$]')
-    plt.ylabel(r'$S_{\nu}$ [%g $erg s^{-1} cm^{-2} \AA^{-1}$]' 
+    plt.ylabel(r'$S_{\nu}$ [%g $erg\ s^{-1}\ cm^{-2}\ \AA^{-1}$]' 
                '\nand Transmission Efficiency' %flux_scale)
 
     plt.xlim((min(filters['g'].w)-1000,max(filters['y'].w)+1000))
@@ -196,6 +197,34 @@ def prob_2b(filters,star):
         Mag = star.get_abs_ab_mag(filters[key], distance)
         print("Vega %s-band mag_ab, Mag_ab = %f,%f" % (key,mag, Mag))
 
+def prob_2d(star):
+
+    fig = plt.figure()
+    plt.title('Vega Luminosity')
+    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}\ cm^{-2}$]')
+    plt.xlabel('Wavelength ($\AA$)')
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    plt.ylim(1e29,1e36)
+    plt.xlim(1e3, 5e4)
+    # plt.xlim(xmin, xmax)
+    plt.plot(star.w, star.vLv, color='b',linewidth=1,ls="-",label=r'$\nu L_\nu$')
+    plt.plot(star.w, star.wLw, color='g',linewidth=4,alpha=0.4,label=r'$\lambda L_\lambda$')
+    plt.axhline(y=L_sun,color="r",lw=1,ls=":",label=r'$L_{\odot} (bol)$')
+
+    peak_idx = np.argmax(star.vLv)
+    mul = star.vLv[peak_idx]/L_sun
+    #plt.axvline(x=star.w[peak_idx],color="g",label=r"Peak Flux (%0.1f x $L_{\odot}$)" % mul)
+    plt.scatter(x=star.w[peak_idx],y=star.vLv[peak_idx], marker='o',s=150,edgecolors='r',facecolors='none',
+                label=r"Peak Flux (%0.1f x $L_{\odot}$)" % mul)
+
+    plt.legend(loc='lower right', bbox_to_anchor=(0.9, 0.1), borderaxespad=0)
+
+    fig.tight_layout()
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p2d.png"))
 
 
 def main():
@@ -209,9 +238,10 @@ def main():
 
     star = Star('A0V', op.join(BASEDIR, "spectrum_A0V.txt"))
 
-    #prob_2a(filters, star)
+    prob_2a(filters, star)
     prob_2b(filters,star)
-
+    #prob_2c (latex only)
+    prob_2d(star)
 
 
 if __name__ == '__main__':
