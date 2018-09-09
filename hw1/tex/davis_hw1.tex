@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+% \usepackage{phase1}
+\usepackage{graphics,graphicx}
+%\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{wrapfig}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{siunitx}
+\usepackage[labelfont=bf]{caption}
+%\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{float}
+\def\Vhrulefill{\leavevmode\leaders\hrule height 0.7ex depth \dimexpr0.4pt-0.7ex\hfill\kern0pt}
+\graphicspath{ {/home/dustin/code/python/ast386c_galaxies/hw1/out/} }
+\usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
+\usepackage{amsmath}
+\usepackage{relsize}
+\def\degree{\,^{\circ}}
+
+%opening
+\title{AST 386C Homework \#1}
+\author{Dustin Davis, eid:polonius}
+\date{September 25, 2018}
+
+\begin{document}
+\maketitle
+
+%\begin{center}
+%\textbf{\large AST 386 Homework \#1}
+%\vspace{2mm}
+%{\sc Dustin Davis}
+%\end{center}
+%\vspace{4mm}
+
+
+
+% Figure \ref{fig:fig1} Normalized Plot.
+
+
+
+\begin{enumerate}
+
+\item Converting between flux, flux density, luminosity and magnitudes.\\
+  \begin{enumerate}
+    \item Plot of A0V spectrum, filters, and flat-spectrum
+    
+    \begin{figure}[H]
+         	     \includegraphics[width=\linewidth]{hw1_p2a.png}
+         	     %\caption{}
+         	     \label{fig:fig4}
+     \end{figure}
+     
+ 
+	 \item Vega AB apparent magnitudes (absolute magnitudes in parenthesis). Using a modified (sums instead of integrals) version of the equation:
+	 
+	 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
+	 	
+	 	where:
+	 	
+	 	 \hspace {10mm}$F(\nu)$ is the flux density as a function of frequency 
+	 	 
+	 	 \hspace{10mm} $T(\nu)$ is the total system response (throughput)\\
+	 	 
+	 	 
+	 	 
+		Instead of integrals, however, given the discrete data, simple summations were used with each $d\nu$ replaced with the step width (in frequency space) to the next data point (note: that the last (red-most) step is truncated for simplicity but given the number of data points, the falling throughput fraction, and the precision of the magnitude reported, the contribution of the last data bin is negligible). Also, notice no uncertainties are reported in the data, so no uncertainties are propagated here.\\
+		
+		The magnitude in each filter is calculated using the range over which the filter throughput is non-zero and the equations:\\
+		
+		 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{<f_{\nu}>}{3631 Jy})$\\
+		 
+		 \hspace{10mm} $M_{<filter>} = m_{<filter>} + 5 -5 \cdot log_{10}(d_{pc})$\\
+	 	 
+	 
+	 \hspace{10mm}$m_{g}\ (M_{g}) = -0.099\ (0.474)$
+	 
+	 \hspace{10mm}$m_{r}\ (M_{r}) = 0.158\ (0.731)$
+	 	  
+	 \hspace{10mm}$m_{i}\ (M_{i}) =  0.399\ (0.972)$
+	 
+	 \hspace{10mm}$m_{z}\ (M_{z}) = 0.542\ (1.115)$
+	 
+	 \hspace{10mm}$m_{y}\ (M_{y}) = 0.622\ (1.195)$\\
+	 	 
+	
+	   
+	 \item todo \\
+	 
+	 \item Plot of A0V in $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$
+	 
+	 \begin{figure}[H]
+		 \includegraphics[width=\linewidth]{hw1_p2d.png}
+	     %\caption{}
+	     \label{fig:fig6}
+	  \end{figure}
+	  
+	
+	todo:
+	  
+	     
+  \end{enumerate}
+\end{enumerate}
+
+
+\end{document}
