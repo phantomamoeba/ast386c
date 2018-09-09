@@ -240,6 +240,12 @@ def prob_2d(star):
     plt.plot(star.w, star.vLv/L_sun, color='b', linewidth=1, ls="-", label=r'$\nu L_\nu$')
     plt.plot(star.w, star.wLw/L_sun, color='g', linewidth=4, alpha=0.4, label=r'$\lambda L_\lambda$')
 
+    peak_idx = np.argmax(star.vLv)
+    mul = star.vLv[peak_idx] / L_sun
+    # plt.axvline(x=star.w[peak_idx],color="g",label=r"Peak Flux (%0.1f x $L_{\odot}$)" % mul)
+    plt.scatter(x=star.w[peak_idx], y=star.vLv[peak_idx]/L_sun, marker='o', s=150, edgecolors='r', facecolors='none',
+                label=r"Peak Lum (%0.1f x $L_{\odot}$)" % mul)
+
     plt.ylim(1, 100)
     plt.xlim(1e3, 5e4)
 
