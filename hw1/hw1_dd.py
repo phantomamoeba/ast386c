@@ -201,7 +201,7 @@ def prob_2d(star):
 
     fig = plt.figure()
     plt.title('Vega Luminosity')
-    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}\ cm^{-2}$]')
+    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}$]')
     plt.xlabel('Wavelength ($\AA$)')
 
     plt.yscale('log')
@@ -218,7 +218,7 @@ def prob_2d(star):
     mul = star.vLv[peak_idx]/L_sun
     #plt.axvline(x=star.w[peak_idx],color="g",label=r"Peak Flux (%0.1f x $L_{\odot}$)" % mul)
     plt.scatter(x=star.w[peak_idx],y=star.vLv[peak_idx], marker='o',s=150,edgecolors='r',facecolors='none',
-                label=r"Peak Flux (%0.1f x $L_{\odot}$)" % mul)
+                label=r"Peak Lum (%0.1f x $L_{\odot}$)" % mul)
 
     plt.legend(loc='lower right', bbox_to_anchor=(0.9, 0.1), borderaxespad=0)
 
