@@ -202,7 +202,7 @@ def prob_2d(star):
     fig = plt.figure()
     plt.title('Vega Luminosity')
     plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}$]')
-    plt.xlabel('Wavelength ($\AA$)')
+    plt.xlabel('Wavelength [$\AA$]')
 
     plt.yscale('log')
     plt.xscale('log')
@@ -225,6 +225,29 @@ def prob_2d(star):
     fig.tight_layout()
     #plt.show()
     plt.savefig(op.join(OUTDIR, "hw1_p2d.png"))
+
+
+
+    fig = plt.figure()
+    plt.title('Vega Luminosity (in Solar Units)')
+    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$L_{\odot}$]')
+    plt.xlabel('Wavelength [$\AA$]')
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    # plt.xlim(xmin, xmax)
+    plt.plot(star.w, star.vLv/L_sun, color='b', linewidth=1, ls="-", label=r'$\nu L_\nu$')
+    plt.plot(star.w, star.wLw/L_sun, color='g', linewidth=4, alpha=0.4, label=r'$\lambda L_\lambda$')
+
+    plt.ylim(1, 100)
+    plt.xlim(1e3, 5e4)
+
+    plt.legend(loc='upper right')#, bbox_to_anchor=(0.9, 0.1), borderaxespad=0)
+
+    fig.tight_layout()
+    # plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p2d-2.png"))
 
 
 def main():

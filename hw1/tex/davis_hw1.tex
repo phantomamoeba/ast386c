@@ -42,38 +42,32 @@
 
 
 \begin{enumerate}
+\item 
+	Download and import data\\
 
-\item Converting between flux, flux density, luminosity and magnitudes.\\
-  \begin{enumerate}
-    \item Plot of A0V spectrum, filters, and flat-spectrum
+	Note: all data manipulations are in python. Source code available if requested.\\
+
+\item 
+	Converting between flux, flux density, luminosity and magnitudes.\\
+	
+	For sanity and easy of use, the spectrum data converted also to $S_{\lambda}$ with frequency indexing so both $S_{\lambda}$ and $S_{\nu}$ can be indexed by either frequency or wavelength. Conversion are made with: \\
+
+	\hspace{10mm} $c = \lambda \cdot \nu$ \hspace{5mm} and \hspace{5mm}  $F_{\lambda}\cdot d\lambda\ =\ F_{\nu}\cdot d\nu$
+	
+	
+	\begin{enumerate}
+    \item Plot of A0V spectrum, filters, and flat-spectrum\\
+    
+    Plotting in $S_{\nu}$ vs $\lambda$ as is the convention with all flux values scaled up by a factor of 2x10$^{19}$ to bring it into the same numeric range as the transmission efficiency. Only the interesting bits of the spectra (nearest the overlap with the filters) are plotted.
     
     \begin{figure}[H]
          	     \includegraphics[width=\linewidth]{hw1_p2a.png}
          	     %\caption{}
-         	     \label{fig:fig4}
+         	     \label{fig:fig1}
      \end{figure}
      
  
-	 \item Vega AB apparent magnitudes (absolute magnitudes in parenthesis). Using a modified (sums instead of integrals) version of the equation:
-	 
-	 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
-	 	
-	 	where:
-	 	
-	 	 \hspace {10mm}$F(\nu)$ is the flux density as a function of frequency 
-	 	 
-	 	 \hspace{10mm} $T(\nu)$ is the total system response (throughput)\\
-	 	 
-	 	 
-	 	 
-		Instead of integrals, however, given the discrete data, simple summations were used with each $d\nu$ replaced with the step width (in frequency space) to the next data point (note: that the last (red-most) step is truncated for simplicity but given the number of data points, the falling throughput fraction, and the precision of the magnitude reported, the contribution of the last data bin is negligible). Also, notice no uncertainties are reported in the data, so no uncertainties are propagated here.\\
-		
-		The magnitude in each filter is calculated using the range over which the filter throughput is non-zero and the equations:\\
-		
-		 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{<f_{\nu}>}{3631 Jy})$\\
-		 
-		 \hspace{10mm} $M_{<filter>} = m_{<filter>} + 5 -5 \cdot log_{10}(d_{pc})$\\
-	 	 
+	 \item Vega AB apparent magnitudes (absolute magnitudes in parenthesis).\\
 	 
 	 \hspace{10mm}$m_{g}\ (M_{g}) = -0.099\ (0.474)$
 	 
@@ -85,20 +79,48 @@
 	 
 	 \hspace{10mm}$m_{y}\ (M_{y}) = 0.622\ (1.195)$\\
 	 	 
-	
+	 Using a modified (sums instead of integrals) version of the equation:
+		 
+		 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
+		 	
+		 	where:
+		 	
+		 	 \hspace {10mm}$F(\nu)$ is the flux density as a function of frequency 
+		 	 
+		 	 \hspace{10mm} $T(\nu)$ is the total system response (throughput)\\
+		 	 
+ 	 
+		Instead of integrals, however, given the discrete data, simple summations were used with each $d\nu$ replaced with the step width (in frequency space) to the next data point (note: that the last (red-most) step is truncated for simplicity but given the number of data points, the falling throughput fraction, and the precision of the magnitude reported, the contribution of the last data bin is negligible). Also, notice no uncertainties are reported in the data, so no uncertainties are propagated here.\\
+		
+		The magnitude in each filter is calculated using the range over which the filter throughput is non-zero and the equations:\\
+			
+			 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{f_{\nu}}{3631 Jy})$\\
+			 
+			 \hspace{10mm} $M_{<filter>} = m_{<filter>} + 5 -5 \cdot log_{10}(d_{pc})$\\
+		 	 
 	   
-	 \item todo \\
+	 \item What do you notice about the values and the shape of the spectrum of Vega?\\	 
 	 
-	 \item Plot of A0V in $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$
+	 Since Vega is a real star, its spectrum is not flat and there are obvious spectral features. In the optical (g-band) it is generally brighter than the reference 3631Jy and fainter in all other provided bands (r,i,z,y), declining toward the red.\\
+	 
+	 \item Plot of A0V in $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$ ...
 	 
 	 \begin{figure}[H]
 		 \includegraphics[width=\linewidth]{hw1_p2d.png}
 	     %\caption{}
-	     \label{fig:fig6}
+	     \label{fig:fig2}
 	  \end{figure}
 	  
 	
-	todo:
+	The over-plotting shows clearly that $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$ are equivalent (which makes sense even dimensionally, removing the per frequency and per wavelength dependencies). You can also easily read off the peak luminosity around 4000$\AA$ at $\sim$ 64$L_{\odot}$.\\
+	
+	Also, note, for other purposes it is generally more convenient to plot in units of the solar luminosity rather than cgs or other units. Below is the same data plotted as such (on the same wavelength scale.)\\
+	
+	\begin{figure}[H]
+		\includegraphics[width=\linewidth]{hw1_p2d-2.png}
+		%\caption{}
+		\label{fig:fig3}
+	\end{figure}
 	  
 	     
   \end{enumerate}
