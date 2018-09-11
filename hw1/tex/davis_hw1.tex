@@ -83,7 +83,7 @@
 	 	 
 	 Using a modified (sums instead of integrals) version of the equation:
 		 
-		 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
+		 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
 		 	
 		 	where:
 		 	
@@ -96,7 +96,7 @@
 		
 		The magnitude in each filter is calculated using the range over which the filter throughput is non-zero and the equations:\\
 			
-			 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{f_{\nu}}{3631 Jy})$\\
+			 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{\displaystyle f_{\nu}}{3631 Jy})$\\
 			 
 			 \hspace{10mm} $M_{<filter>} = m_{<filter>} + 5 -5 \cdot log_{10}(d_{pc})$\\
 		 	 
@@ -135,9 +135,62 @@
   
   \begin{enumerate}
 	  \item %PROBLEM 3a
-	  todo:
+	  
+	  
+	  Salpeter IMF\\
+	  
+	 The expectation value of mass from the Salpeter IMF is $\approx 0.28 M_{\odot}$\\
+	  
+	  \begin{figure}[H]
+	  		\includegraphics[width=\linewidth]{hw1_p3a.png}
+	  		%\caption{}
+	  		\label{fig:fig4}
+	  \end{figure}
   
-  
+  		
+  		To keep things simple, I coded the Salpeter IMF (Initial Mass Function) into an MDF (Mass Distribution (or Denisty) Function) rather than a PDF (Probability Density Function) (that is, as a discrete distribution rather than a continuous one, using fixed width mass bins of 0.01 $M_{\odot}$ between $0.08 M_{\odot}$ and $100 M_{\odot}$). For readability though, representative equations (below) are shown in continuous form. \\
+  		
+  		  		$n(m1,m2) = \mathlarger{\int_{m1}^{m1+0.01}} \xi(m)dm $, \hspace{5mm}  where  $\xi(m) = m^{-2.35}$ \\
+  		  		
+  		The MDF is then normalized to 1.0 (i.e. each number density bin is divided by the total number of stars in the set)\\
+  		
+  		
+  		The expectation value of mass is then (in this implementation) a discrete sum of all the weighted probabilities times the mass of the corresponding bin. \\
+  		
+  		$<m> = \mathlarger{\int_{0.08}^{100}} m\cdot n(m)dm $ \\
+  		
+  		
+  		The CDF (Cumulative Density Function) is also implemented discretely, rather than continuously, as the sum of all probability bins for masses greater than the current mass.\\
+  		
+ 	\item %PROBLEM 3B
+ 	
+	 	Maximum mass of stars expected to still be found on the Main Sequence:\\
+		  
+		   \hspace{10mm}100 Myr $\approx 5.36 M_{\odot}$ 
+		   
+		   \hspace{10mm}500 Myr $\approx 2.82 M_{\odot}$ 
+		   
+		   \hspace{10mm}~~  1 Gyr $\approx 2.14 M_{\odot}$\\
+		  		  
+		  
+		  This solution uses the relation: $\frac{\displaystyle T_*}{\displaystyle T_{\odot}} = \frac{\displaystyle M_*}{\displaystyle M_{\odot}}\frac{\displaystyle L_{\odot}}{\displaystyle L_*}$, where $T_{\odot} = 10Gyr$
+		  
+		   rearranging to solve for:  \\
+		  
+		  \hspace{10mm} $M_* = M_{\odot} \cdot  \frac{\displaystyle T_{\odot}}{\displaystyle T_*} \cdot \frac{\displaystyle L_*}{\displaystyle L_{\odot}}$\\
+		  
+		then substituting in the appropriate $\frac{\displaystyle L_*}{\displaystyle L_{\odot}}$ from the problem description and verifying the solution is valid (that the mass is in the appropriate range ... if it is not, try the next substitution).\\
+		  
+		  
+  	\item Impact of aging stellar populations on prior question:\\
+  	
+	  	Age 500 Myr: Changes the upper mass limit to $\approx 2.82 M_{\odot}$ and  results in a new expectation mass of $\approx 0.22 M_{\odot}$\\
+	  	
+	  	Age 1 Gyr: Changes the upper mass limit to $\approx 2.14 M_{\odot}$ and  results in a new expectation mass of $\approx 0.21 M_{\odot}$\\
+	  	
+		Here, I ignore any on-going star formation, and since the highest mass stars have aged off the Main Sequence, they are no longer included in the calculation, and the expectation mass is lower. In short, the upper limit of the MDF is truncated to the maximum predicted mass still living on the Main Sequence and the expectation mass is recomputed as before.\\
+	  
+  	
   \end{enumerate}
   
   

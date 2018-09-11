@@ -20,6 +20,8 @@ c_const = 2.99792458e18 #angstroms/sec
 pc_cm = 3.086e18
 L_sun = 3.839e33
 
+MIN_MASS = 0.08  #m_sun 0.0076
+
 def jansky_to_erg(j):
     return j * 1.0e-23
 
@@ -256,21 +258,153 @@ def prob_2d(star):
     plt.savefig(op.join(OUTDIR, "hw1_p2d-2.png"))
 
 
+
+#this is result of the definite integral between m_low to m_high of m^-2.35 dm
+def salpeter_num_stars(m_low,m_high):
+    return float(-1./1.35)*(m_high**(-1.35)-m_low**(-1.35))
+
+#this is result of the definite integral between m_low to m_high of m*m^-2.35 dm
+def salpeter_mass_stars(m_low, m_high):
+    return float(-1./0.35)*(m_high**(-0.35)-m_low**(-0.35))
+
+def salpeter_exp_value(m_low, m_high):
+    return float(-1./0.35)*(m_high**(-0.35)-m_low**(-0.35))
+
+#this is the pdf N(m1,m2) the fractional number of stars between m1 and m2
+def salpeter_stepped_numbers(m_low,m_high,step=0.01):
+    m = []
+    total_number = salpeter_num_stars(m_low, m_high)
+    mass_range = np.arange(m_low,m_high+step,step)
+    for i in mass_range:
+        m.append(salpeter_num_stars(i,i+step))
+    return np.array(m)/total_number
+
+#this is the mass pdf M(m1,m2) (fractional mass between m1 and m2)
+def salpeter_stepped_masses(m_low,m_high,step=0.01):
+    m = []
+    total_mass = salpeter_mass_stars(m_low, m_high)
+    mass_range = np.arange(m_low, m_high + step, step)
+    for i in mass_range:
+        m.append(salpeter_mass_stars(i,i+step))
+    return np.array(m)/total_mass
+
+
+def do_salpeter(m_low,m_high,stepsize=0.01):
+    mass_grid = np.arange(m_low,m_high+stepsize,stepsize)
+    numbers_pdf = salpeter_stepped_numbers(m_low,m_high,stepsize)
+    masses_pdf = salpeter_stepped_masses(m_low,m_high,stepsize)
+
+    return mass_grid, numbers_pdf, masses_pdf
+
+
+
+def prob_3a():
+
+    min_mass = 0.08
+    max_mass = 100.0
+
+    mass_grid,n_pdf,m_pdf = do_salpeter(min_mass,max_mass,0.01)
+
+    exp_mass = np.sum(mass_grid*n_pdf)
+    cdf = np.flip(np.cumsum(np.flip(n_pdf,0)),0)
+
+
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.xlim(min_mass,max_mass)
+    plt.ylim(0.0,1.01)
+    plt.title("Salpeter IMF CDF (x=1.35)")
+    plt.xlabel("$M_{*}/M_{\odot}$")
+    plt.ylabel("Cumulative Mass Fraction: f(>m)")
+
+    plt.plot(mass_grid,cdf)
+
+    val = min(mass_grid, key=lambda mass: abs(exp_mass-mass))
+    exp_mass_y = cdf[np.where(mass_grid == val)]
+    plt.scatter(exp_mass,exp_mass_y,color='r',marker='+',linewidth=1,s=100)#facecolors='none'
+    plt.annotate(
+        r"<m> $\approx$ %0.2f $M_{\odot}$" % exp_mass,
+        xy=(exp_mass,exp_mass_y), xytext=(100, 40),
+        textcoords='offset points', ha='right', va='bottom',
+        arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p3a.png"))
+
+
+def luminosity(mass):
+    #from 3b problem
+    if mass < 0.43:
+        return 0.23*(mass)**2.3
+    elif mass < 2.0:
+        return mass**4.0
+    elif mass < 20.0:
+        return 1.5*mass**3.5
+    else:
+        return 3200.0*mass
+
+def prob_3d():
+
+    min_mass = 0.08
+    max_mass = 100.0
+    mass_step = 0.5
+
+    mass_grid,n_pdf,m_pdf = do_salpeter(min_mass,max_mass,mass_step)
+
+    lum_grid = []
+    for m in mass_grid:
+        lum_grid.append(luminosity(m))
+
+    lum_grid = np.array(lum_grid)
+
+
+    weighted_lums = n_pdf*lum_grid #like weighted masses
+    #weighted_lums = lum_grid  # like weighted masses
+
+    #normalize
+    weighted_lums = weighted_lums/np.sum(weighted_lums)
+
+    #want 100% at 0.08 mass and 0% at 100.0 mass
+    cdf = np.flip(np.cumsum(np.flip(weighted_lums,0)),0)
+
+
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.xlim(min_mass,max_mass)
+    plt.ylim(0.0,1.01)
+    #plt.gca().invert_xaxis() #plot from high mass to low
+    plt.title("Salpeter IMF CDF with x=1.35")
+    #plt.suptitle("<m> = " + str(exp_mass))
+    plt.ylabel("cumulative luminosity fraction $f_L$(>m)")
+    plt.xlabel("$M_{*}/M_{\odot}$")
+    plt.plot(mass_grid,cdf)
+    #find closest value to expectation value in the mass array
+
+
+    plt.show()
+    #plt.savefig("prob1d.png")
+
+
 def main():
 
-    filters = {'g':Filter('g', op.join(BASEDIR, "subaru_g.txt")),
-               'r':Filter('r', op.join(BASEDIR, "subaru_r.txt")),
-               'i':Filter('i', op.join(BASEDIR, "subaru_i.txt")),
-               'z':Filter('z', op.join(BASEDIR, "subaru_z.txt")),
-               'y':Filter('y', op.join(BASEDIR, "subaru_y.txt")),
-               }
+    # filters = {'g':Filter('g', op.join(BASEDIR, "subaru_g.txt")),
+    #            'r':Filter('r', op.join(BASEDIR, "subaru_r.txt")),
+    #            'i':Filter('i', op.join(BASEDIR, "subaru_i.txt")),
+    #            'z':Filter('z', op.join(BASEDIR, "subaru_z.txt")),
+    #            'y':Filter('y', op.join(BASEDIR, "subaru_y.txt")),
+    #            }
+    #
+    # star = Star('A0V', op.join(BASEDIR, "spectrum_A0V.txt"))
+    #
+    # prob_2a(filters, star)
+    # prob_2b(filters,star)
+    # #prob_2c (latex only)
+    # prob_2d(star)
 
-    star = Star('A0V', op.join(BASEDIR, "spectrum_A0V.txt"))
-
-    prob_2a(filters, star)
-    prob_2b(filters,star)
-    #prob_2c (latex only)
-    prob_2d(star)
+    #prob_3a()
+    #prob_3b ...text work only
+    #prob_3c ...text work only
+    prob_3d()
 
 
 if __name__ == '__main__':
