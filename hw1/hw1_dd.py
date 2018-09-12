@@ -259,16 +259,19 @@ def prob_2d(star):
 
 
 
+# 1/ln(10) ~ 0.434
+# -0.434/1.35 ~ -0.32148
+#-0.434/0.35 ~ -1.24
+# though, really, these are all in relative fractions so the leading 1/ln(10) * 1/1.35 = -0.434/1.35 does not really matter ...
 #this is result of the definite integral between m_low to m_high of m^-2.35 dm
+#this is not a TRUE number of stars ... it is a fractional representation
 def salpeter_num_stars(m_low,m_high):
-    return float(-1./1.35)*(m_high**(-1.35)-m_low**(-1.35))
+    return -0.32148*(m_high**(-1.35)-m_low**(-1.35))
 
 #this is result of the definite integral between m_low to m_high of m*m^-2.35 dm
 def salpeter_mass_stars(m_low, m_high):
-    return float(-1./0.35)*(m_high**(-0.35)-m_low**(-0.35))
+    return -1.24*(m_high**(-0.35)-m_low**(-0.35))
 
-def salpeter_exp_value(m_low, m_high):
-    return float(-1./0.35)*(m_high**(-0.35)-m_low**(-0.35))
 
 #this is the pdf N(m1,m2) the fractional number of stars between m1 and m2
 def salpeter_stepped_numbers(m_low,m_high,step=0.01):
@@ -295,6 +298,40 @@ def do_salpeter(m_low,m_high,stepsize=0.01):
     masses_pdf = salpeter_stepped_masses(m_low,m_high,stepsize)
 
     return mass_grid, numbers_pdf, masses_pdf
+
+
+
+def salpeter_log_space_masses(logM_low, logM_high):
+    m = []
+    total_mass = salpeter_num_stars(10**logM_low, 10**logM_high)
+
+    mass_range = np.logspace(logM_low, logM_high, 1000)
+    for i in range(len(mass_range) - 1):
+        m.append(salpeter_mass_stars(10 ** mass_range[i], 10 ** (mass_range[i + 1])))
+        m.append(salpeter_mass_stars(10 ** mass_range[-1], 10 ** (mass_range[-1] + (mass_range[-1] - mass_range[-2]))))
+
+    return np.array(m)/total_mass
+
+def salpeter_log_space_numbers(logM_low, logM_high):
+    m = []
+    total_number = salpeter_num_stars(10**logM_low, 10**logM_high)
+
+    mass_range = np.logspace(logM_low, logM_high,1000)
+    for i in range(len(mass_range)-1):
+        m.append(salpeter_num_stars(10**mass_range[i],10**(mass_range[i+1])))
+    #last one
+    m.append(salpeter_num_stars(10 ** mass_range[-1], 10 ** (mass_range[-1]+(mass_range[-1]-mass_range[-2]))))
+
+    return np.array(m)/total_number
+
+def salpeter_log_space(m_low, m_high):
+    logM_low = np.log10(m_low)
+    logM_high = np.log10(m_high)
+    mass_grid = np.logspace(logM_low, logM_high,1000)
+    numbers_pdf = salpeter_log_space_numbers(logM_low, logM_high)
+    masses_pdf = salpeter_log_space_masses(logM_low, logM_high)
+    return mass_grid, numbers_pdf, masses_pdf
+
 
 
 
@@ -345,11 +382,15 @@ def luminosity(mass):
 
 def prob_3d():
 
+    plt.close('all')
+
     min_mass = 0.08
     max_mass = 100.0
-    mass_step = 0.5
+    mass_step =0.01
 
     mass_grid,n_pdf,m_pdf = do_salpeter(min_mass,max_mass,mass_step)
+
+    #mass_grid, n_pdf, m_pdf = salpeter_log_space(min_mass, max_mass)
 
     lum_grid = []
     for m in mass_grid:
@@ -375,15 +416,125 @@ def prob_3d():
     #plt.gca().invert_xaxis() #plot from high mass to low
     plt.title("Salpeter IMF CDF with x=1.35")
     #plt.suptitle("<m> = " + str(exp_mass))
-    plt.ylabel("cumulative luminosity fraction $f_L$(>m)")
+    plt.ylabel("Cumulative Luminosity Fraction $f_L$(>m)")
     plt.xlabel("$M_{*}/M_{\odot}$")
     plt.plot(mass_grid,cdf)
     #find closest value to expectation value in the mass array
 
 
-    plt.show()
-    #plt.savefig("prob1d.png")
+    #test
+    #mg20 = np.linspace(20.,100.,100)
+    #plt.plot(mg20,-(3200.**(1.35))/(1.35 * np.log(10.))*((1/(3200.*100.))**(1.35) - (1/(3200.* mg20))**(1.35)),color='r')
 
+
+    plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
+
+def prob_3e():
+    plt.close('all')
+    min_mass = 0.08
+    max_mass = 100.0
+    mass_step = 0.01
+
+#todo: also plot the points directly read from the EEE file
+    #todo: not the top few masses that were calcuated from the relations
+    #todo: and maybe plot the model mass/lum and mass/temp from the 4 models??
+
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.xlim(min_mass,max_mass)
+    plt.ylim(0.0,1.01)
+    #plt.gca().invert_xaxis() #plot from high mass to low
+    plt.title("Salpeter IMF CDF with x=1.35")
+    #plt.suptitle("<m> = " + str(exp_mass))
+    plt.ylabel("Cumulative Luminosity Fraction $f_L$(>m)")
+    plt.xlabel("$M_{*}/M_{\odot}$")
+
+
+    ### 100 upper (0 aged)
+    mass_grid, n_pdf, m_pdf = do_salpeter(min_mass, max_mass, mass_step)
+
+    lum_grid = []
+    for m in mass_grid:
+        lum_grid.append(luminosity(m))
+
+    lum_grid = np.array(lum_grid)
+
+    weighted_lums = n_pdf * lum_grid  # like weighted masses
+
+    # normalize
+    weighted_lums = weighted_lums / np.sum(weighted_lums)
+
+    # want 100% at 0.08 mass and 0% at 100.0 mass
+    cdf = np.flip(np.cumsum(np.flip(weighted_lums, 0)), 0)
+
+    plt.plot(mass_grid, cdf,color='b',label="      +0 Myr")
+
+
+
+
+    ### 2.82 upper, 500 Myr aged
+    #sub-select and re-normalize to what is left
+    lum_grid = []
+    aged_pdf = []
+    aged_mass_grid = []
+    for i in range(len(mass_grid)):
+        if mass_grid[i] < 2.82:
+            aged_mass_grid.append(mass_grid[i])
+            lum_grid.append(luminosity(mass_grid[i]))
+            aged_pdf.append(n_pdf[i])
+        else:
+            break
+
+    lum_grid = np.array(lum_grid)
+    aged_pdf = np.array(aged_pdf)
+    aged_mass_grid = np.array(aged_mass_grid)
+
+    weighted_lums = aged_pdf * lum_grid  # like weighted masses
+
+    # normalize
+    weighted_lums = weighted_lums / np.sum(weighted_lums)
+
+    # want 100% at 0.08 mass and 0% at 100.0 mass
+    cdf = np.flip(np.cumsum(np.flip(weighted_lums, 0)), 0)
+
+    plt.plot(aged_mass_grid, cdf, color='orange',label="  +500 Myr")
+
+
+
+
+
+    ### 2.14 upper, 1 Gyr aged
+    # sub-select and re-normalize to what is left
+    lum_grid = []
+    aged_pdf = []
+    aged_mass_grid = []
+    for i in range(len(mass_grid)):
+        if mass_grid[i] < 2.14:
+            aged_mass_grid.append(mass_grid[i])
+            lum_grid.append(luminosity(mass_grid[i]))
+            aged_pdf.append(n_pdf[i])
+        else:
+            break
+
+    lum_grid = np.array(lum_grid)
+    aged_pdf = np.array(aged_pdf)
+    aged_mass_grid = np.array(aged_mass_grid)
+
+    weighted_lums = aged_pdf * lum_grid  # like weighted masses
+
+    # normalize
+    weighted_lums = weighted_lums / np.sum(weighted_lums)
+
+    # want 100% at 0.08 mass and 0% at 100.0 mass
+    cdf = np.flip(np.cumsum(np.flip(weighted_lums, 0)), 0)
+
+    plt.plot(aged_mass_grid, cdf, color='r',label="+1000 Myr")
+
+    plt.legend(loc='lower left', bbox_to_anchor=(0.1, 0.1), borderaxespad=0)
+
+    plt.show()
+    #plt.savefig(op.join(OUTDIR, "hw1_p3e.png"))
 
 def main():
 
@@ -405,6 +556,7 @@ def main():
     #prob_3b ...text work only
     #prob_3c ...text work only
     prob_3d()
+    prob_3e()
 
 
 if __name__ == '__main__':
