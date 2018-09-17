@@ -115,24 +115,7 @@ class Star:
             return 0.0
 
     def get_ab_mag(self,filter):
-        # w_i = min(filter.w)
-        # w_f = max(filter.w)
-        # top = quad(top_int,w_i,w_f,args=(f_w,filter.Tw))
-
-        # top = 0.
-        # bot = 0.
-        # mid = np.median(filter.w)
-        #
-        # for i in range(len(self.w)-1):
-        #     top += self.w[i] * self.Sw[i]*filter.getTw(self.w[i])*(self.w[i+1]-self.w[i]) #* (self.w[i]**2) / c_const
-        #     bot += self.w[i] * filter.getTw(self.w[i]) * (self.w[i + 1] - self.w[i]) #* (self.w[i]**2) / c_const
-        #
-        #
-        # fflux_v = top/bot /( c_const/(mid**2)) #should be iso not mid, but this is close
-        #convert to fflux_v
-        #
-
-        #better ... since this is discrete, though, just run two sums rather than two integrals
+        #since this is discrete, just run two sums rather than two integrals
         #and use the (variable) difference to the next list element as dv (we lose the last one, but for tihs
         #purpose it won't matter)
         top = 0.
@@ -158,12 +141,10 @@ class Star:
 
 
 def prob_2a(filters,star):
-
-
     flux_scale = 2.0e19
     wave_scale = 1.0
 
-    fig = plt.figure(figsize=(8,5))
+    plt.figure(figsize=(8,5))
     plt.title("Zoomed A0V Spectrum and Filters")
     plt.xlabel(r'$\lambda$ [$\AA$]')
     plt.ylabel(r'$S_{\nu}$ [%g $erg\ s^{-1}\ cm^{-2}\ \AA^{-1}$]' 
@@ -176,8 +157,6 @@ def prob_2a(filters,star):
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
     color = 1
 
-
-
     plt.plot(star.w*wave_scale, star.Sv*flux_scale, color=scalarMap.to_rgba(0),label="A0V")
     plt.axhline(y=jansky_to_erg(3631.0)*flux_scale, color=scalarMap.to_rgba(color), ls='--',label="3631 Jy")
 
@@ -185,7 +164,6 @@ def prob_2a(filters,star):
         color += 1
         plt.plot(filters[key].w, filters[key].Tw, color=scalarMap.to_rgba(color),label="%s-band"%key)
         plt.text(np.median(filters[key].w),0.2,key,color=scalarMap.to_rgba(color))
-
 
     plt.legend(loc="upper left",bbox_to_anchor=(1.05, 1.0))
 
@@ -230,8 +208,6 @@ def prob_2d(star):
     fig.tight_layout()
     #plt.show()
     plt.savefig(op.join(OUTDIR, "hw1_p2d.png"))
-
-
 
     fig = plt.figure()
     plt.title('Vega Luminosity (in Solar Units)')
@@ -424,26 +400,18 @@ def prob_3d():
     plt.plot(mass_grid,cdf)
     #find closest value to expectation value in the mass array
 
-
-    #test
     mg20 = np.linspace(20.,100.,100)
-   # plt.plot(mg20,-(3200.**(1.35))/(1.35 * np.log(10.))*(((3200.*100.))**(-1.35) - ((3200.* mg20))**(-1.35)),color='r')
-
     plt.plot(mg20,-1./(1.35 * np.log(10.))*(100.**(-1.35) - mg20**(-1.35)),color='r')
-
 
     plt.show()
     plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
+
 
 def prob_3e():
     plt.close('all')
     min_mass = 0.08
     max_mass = 100.0
     mass_step = 0.01
-
-#todo: also plot the points directly read from the EEE file
-    #todo: not the top few masses that were calcuated from the relations
-    #todo: and maybe plot the model mass/lum and mass/temp from the 4 models??
 
     plt.figure()
     plt.gca().set_xscale("log")
@@ -476,8 +444,6 @@ def prob_3e():
     plt.plot(mass_grid, cdf,color='b',label="      +0 Myr")
 
 
-
-
     ### 2.82 upper, 500 Myr aged
     #sub-select and re-normalize to what is left
     lum_grid = []
@@ -504,10 +470,6 @@ def prob_3e():
     cdf = np.flip(np.cumsum(np.flip(weighted_lums, 0)), 0)
 
     plt.plot(aged_mass_grid, cdf, color='orange',label="  +500 Myr")
-
-
-
-
 
     ### 2.14 upper, 1 Gyr aged
     # sub-select and re-normalize to what is left
@@ -557,11 +519,6 @@ def read_EEM_file(mass_grid):
     t, llog, m = np.genfromtxt(op.join(BASEDIR, "EEM_dwarf_UBVIJHK_colors_Teff_DD_reduced.txt"),
                                missing_values="...",
                                max_rows=84, dtype=float, usecols=(1, 5, 18), unpack=True)
-
-    original_m = np.flip(m, 0).copy()
-    # fill in missing leading nan's for the mass (use L/3200 = M from the relations in 1b)
-    # per instructions, insert a m = 100 t = 45000, so truncate t entries and add a m=100
-
     count = 0
     for i in range(len(m)):
         if np.isnan(m[i]):
@@ -580,23 +537,14 @@ def read_EEM_file(mass_grid):
     llog = np.insert(llog, 0, 5.75)  # between the top two
 
     l = 10 ** llog
-
-    # old method (build from temp relation)
-    # for i in range(len(m)):
-    #    if np.isnan(m[i]):
-    #        m[i] = l[i]/3200.
-
     t = np.flip(t, 0)
     m = np.flip(m, 0)
     l = np.flip(l, 0)
-    # mass_grid = np.arange(min_mass, max_mass + step, step)
-    # todo: interpolate vs mass_grid
+
     T_grid = np.interp(mass_grid, m, t)
     L_grid = np.interp(mass_grid, m, l)
 
     # clean up m,t,l to original data (true for all three)
-
-    # todo: convert luminosity in l (as logs) to linear
     return mass_grid, T_grid, L_grid, m, t, l
 
 def read_fits_table(t_eff, mass):
@@ -676,27 +624,22 @@ def prob_4a():
 
     min_mass = 0.08
     max_mass = 100.0
-
     mass_grid, n_pdf, m_pdf = do_salpeter(min_mass, max_mass, 0.01)
-
     Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)  # m,t,l are the original few data
 
     plt.subplots(figsize=(12, 4))
     plt.subplots_adjust(wspace=0.2)
     plt.subplot(121)
     plt.title('Temperature vs Mass')
-    # plt.xlim(xmin=100,xmax=20000)
     plt.ylabel(r'$T_{eff}$ ($^\circ$K)')  # r'$\alpha > \beta$'
     plt.xlabel(r'$M_*/M_{\odot}$')
-
     plt.yscale('log')
     plt.xscale('log')
-
     plt.ylim(1e3, 1e5)
+
     plt.plot(Mass, Teff, color='k', linewidth=1)
     plt.scatter(mx[:-1], tx[:-1], color='b', marker='o', label="Data Points")
     plt.scatter(mx[-1], tx[-1], color='r', marker='s',label='Extrapolated Data')
-
     plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
 
 
@@ -711,8 +654,6 @@ def prob_4a():
     plt.plot(Mass, Lum, color='k', linestyle="-", alpha=1.0, linewidth=1)
     plt.scatter(mx[:-1], lx[:-1], color='b', marker='o', label="Data Points")
     plt.scatter(mx[-1], lx[-1], color='r', marker='s',label='Extrapolated Data')
-
-
     plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
 
     plt.tight_layout()
@@ -734,8 +675,6 @@ def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
     frac = {'M': 0.0, 'FGK': 0.0, 'BA': 0.0, 'O': 0.0}
 
     # Mass, Teff, Lum, mass_grid, n_pdf, m_pdf all same size
-    i = 0
-
     for i in range(len(mass_grid)):
         if mass_grid[i] < 0.43:  # M
             w, f, l = read_fits_table(Teff[i], mass_grid[i])
@@ -771,8 +710,6 @@ def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
     plt.title(title)
     plt.ylabel(r'$L/L_{\odot}$')
     plt.xlabel(r'$\lambda$ [$\AA$]')
-
-    #"0.08 < M < 0.43 M_{\odot}"
 
     plt.plot(spectra_grid, spec['M'] / L_sun, color='red', label=r'0.08 $\leq$ $M_*$ < 0.43 $M_{\odot}$' +
                                                                  '\nfrac %0.3f' % frac['M'])  # lightest
@@ -831,6 +768,10 @@ def prob_4d2(mass_grid, n_pdf, Teff, spectra_grid):
 
 def main():
 
+    ##########################
+    ##PROBLEM 2
+    ##########################
+
     # filters = {'g':Filter('g', op.join(BASEDIR, "subaru_g.txt")),
     #            'r':Filter('r', op.join(BASEDIR, "subaru_r.txt")),
     #            'i':Filter('i', op.join(BASEDIR, "subaru_i.txt")),
@@ -845,6 +786,11 @@ def main():
     # #prob_2c (latex only)
     # prob_2d(star)
 
+
+    ##########################
+    ##PROBLEM 3
+    ##########################
+
     #prob_3a()
     #prob_3b ...text work only
     #prob_3c ...text work only
@@ -852,30 +798,37 @@ def main():
     #prob_3e()
 
 
+    ##########################
+    ##PROBLEM 4
+    ##########################
 
     # #
-    prob_4a()
-
-    #need these for most of what follows, so just do it once
-    mass_step = 0.01
-    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
-    Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
-    spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
-
-    prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-    prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-
-    #have to rebuild for different ages (remaining masses)
-    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
-    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
-    prob_4d1(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-
-    #have to rebuild for different ages (remaining masses)
-    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.14, mass_step)
-    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
-    prob_4d2(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    # prob_4a()
+    #
+    # #need these for most of what follows, so just do it once
+    # mass_step = 0.01
+    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
+    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
+    # spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
+    #
+    # prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    # prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    #
+    # #have to rebuild for different ages (remaining masses)
+    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
+    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    # prob_4d1(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    #
+    # #have to rebuild for different ages (remaining masses)
+    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.14, mass_step)
+    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    # prob_4d2(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
 
     #prob_4e() ... write-up only
+
+
+
+    exit(0)
 
 
 if __name__ == '__main__':
