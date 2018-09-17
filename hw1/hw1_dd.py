@@ -11,6 +11,7 @@ import os.path as op
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+import astropy.table
 
 
 BASEDIR = "res"
@@ -19,6 +20,8 @@ OUTDIR = "out"
 c_const = 2.99792458e18 #angstroms/sec
 pc_cm = 3.086e18
 L_sun = 3.839e33
+M_sun = 1.9894*10**33 #grams
+G_const = 6.67259*10**(-8) #cm^3 g^-1 s^-2
 
 MIN_MASS = 0.08  #m_sun 0.0076
 
@@ -423,8 +426,10 @@ def prob_3d():
 
 
     #test
-    #mg20 = np.linspace(20.,100.,100)
-    #plt.plot(mg20,-(3200.**(1.35))/(1.35 * np.log(10.))*((1/(3200.*100.))**(1.35) - (1/(3200.* mg20))**(1.35)),color='r')
+    mg20 = np.linspace(20.,100.,100)
+   # plt.plot(mg20,-(3200.**(1.35))/(1.35 * np.log(10.))*(((3200.*100.))**(-1.35) - ((3200.* mg20))**(-1.35)),color='r')
+
+    plt.plot(mg20,-1./(1.35 * np.log(10.))*(100.**(-1.35) - mg20**(-1.35)),color='r')
 
 
     plt.show()
@@ -533,8 +538,296 @@ def prob_3e():
 
     plt.legend(loc='lower left', bbox_to_anchor=(0.1, 0.1), borderaxespad=0)
 
-    plt.show()
-    #plt.savefig(op.join(OUTDIR, "hw1_p3e.png"))
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p3e.png"))
+
+
+def surface_flux_lambda_to_vLv(flux,lam,radius): #assume 10pc distances
+    conversion =  4 * math.pi * radius**2
+    return np.float64(flux)*lam*conversion
+
+def radius_of_star(log_g,mass):
+    return math.sqrt(G_const*M_sun*mass/(10**log_g))
+
+
+
+def read_EEM_file(mass_grid):
+    # read the first 84 rows (below that, the masses are unknown, but are below our 0.08 M_sun limit anyway
+    #use previously cleaned up version of the file
+    t, llog, m = np.genfromtxt(op.join(BASEDIR, "EEM_dwarf_UBVIJHK_colors_Teff_DD_reduced.txt"),
+                               missing_values="...",
+                               max_rows=84, dtype=float, usecols=(1, 5, 18), unpack=True)
+
+    original_m = np.flip(m, 0).copy()
+    # fill in missing leading nan's for the mass (use L/3200 = M from the relations in 1b)
+    # per instructions, insert a m = 100 t = 45000, so truncate t entries and add a m=100
+
+    count = 0
+    for i in range(len(m)):
+        if np.isnan(m[i]):
+            t[i] = float('nan')
+            llog[i] = float('nan')
+            count += 1
+
+    # now truncate the nan's
+    m = m[count:]
+    t = t[count:]
+    llog = llog[count:]
+
+    # now prepend m 100
+    m = np.insert(m, 0, 100.0)
+    t = np.insert(t, 0, 45000.0)
+    llog = np.insert(llog, 0, 5.75)  # between the top two
+
+    l = 10 ** llog
+
+    # old method (build from temp relation)
+    # for i in range(len(m)):
+    #    if np.isnan(m[i]):
+    #        m[i] = l[i]/3200.
+
+    t = np.flip(t, 0)
+    m = np.flip(m, 0)
+    l = np.flip(l, 0)
+    # mass_grid = np.arange(min_mass, max_mass + step, step)
+    # todo: interpolate vs mass_grid
+    T_grid = np.interp(mass_grid, m, t)
+    L_grid = np.interp(mass_grid, m, l)
+
+    # clean up m,t,l to original data (true for all three)
+
+    # todo: convert luminosity in l (as logs) to linear
+    return mass_grid, T_grid, L_grid, m, t, l
+
+def read_fits_table(t_eff, mass):
+    # return the wavlengths and corresponding fluxes (in lam*f_lam cgs units) and surface luminosity
+    # based on 0 metalicity (kp00) and the T_eff determining the gravity
+
+    filename = "kp00_"
+     # maybe, show assuming <3500 == 3500 vs ignoring completely that the difference is negligible?
+
+    # temps run 3500 to 10,000 in steps of 250
+    basenum = 0
+    if t_eff < 3500:
+        # print("Adjusting t_eff =  %d to minimum (3500)" %t_eff)
+        t_eff = 3500
+
+    if t_eff < 10250:
+        basenum = int(t_eff / 250) * 250
+        mod = t_eff % 250
+        if mod > 125:
+            basenum += 250
+        if basenum > 10000:
+            basenum = 10000
+    # then 10,000 to 13,000 in steps of 500
+    elif t_eff < 13500:
+        basenum = int(t_eff / 500) * 500
+        mod = t_eff % 500
+        if mod > 250:
+            basenum += 500
+        if basenum > 13000:
+            basenum = 13000
+    # then 13,000 to 35,000 in steps of 1000
+    elif t_eff < 36250:
+        basenum = int(t_eff / 1000) * 1000
+        mod = t_eff % 1000
+        if mod > 500:
+            basenum += 1000
+        if basenum > 35000:
+            basenum = 35000
+    else:
+        basenum = int(t_eff / 2500) * 2500
+        mod = t_eff % 2500
+        if mod > 1250:
+            basenum += 2500
+        if basenum > 50000:
+            basenum = 50000
+    # then 37,500 to 50,000 in steps of 2500
+
+    # print("Rounding T_eff = %d to %d for mass %f" %(t_eff, basenum, mass))
+
+    filename += str(basenum) + ".fits"
+
+    cat_loc = op.join(BASEDIR, "kp00", filename)
+    table = astropy.table.Table.read(cat_loc)
+
+    w = np.array(table['WAVELENGTH'])
+
+    if t_eff >= 41000.:
+        f = np.array(table['g50'])
+        log_g = 5.0
+    elif t_eff >= 36000.:
+        f = np.array(table['g45'])
+        log_g = 4.5
+    elif t_eff >= 9000.:
+        f = np.array(table['g40'])
+        log_g = 4.0
+    else:
+        f = np.array(table['g45'])
+        log_g = 4.5
+
+    # need stars radius ....
+    radius = radius_of_star(log_g, mass)
+    l = surface_flux_lambda_to_vLv(f, w, radius)
+
+    return w, f * w, l * w  # wavelengths and flux (in lam*f_lam, cgs)
+
+def prob_4a():
+
+    min_mass = 0.08
+    max_mass = 100.0
+
+    mass_grid, n_pdf, m_pdf = do_salpeter(min_mass, max_mass, 0.01)
+
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)  # m,t,l are the original few data
+
+    plt.subplots(figsize=(12, 4))
+    plt.subplots_adjust(wspace=0.2)
+    plt.subplot(121)
+    plt.title('Temperature vs Mass')
+    # plt.xlim(xmin=100,xmax=20000)
+    plt.ylabel(r'$T_{eff}$ ($^\circ$K)')  # r'$\alpha > \beta$'
+    plt.xlabel(r'$M_*/M_{\odot}$')
+
+    plt.yscale('log')
+    plt.xscale('log')
+
+    plt.ylim(1e3, 1e5)
+    plt.plot(Mass, Teff, color='k', linewidth=1)
+    plt.scatter(mx[:-1], tx[:-1], color='b', marker='o', label="Data Points")
+    plt.scatter(mx[-1], tx[-1], color='r', marker='s',label='Extrapolated Data')
+
+    plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
+
+
+    plt.subplot(122)
+    plt.title('Luminosity vs Mass')
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.ylabel(r'$L_*/L_{\odot}$')
+    plt.xlabel(r'$M_*/M_{\odot}$')
+    plt.ylim([1e-4, 1e6])
+
+    plt.plot(Mass, Lum, color='k', linestyle="-", alpha=1.0, linewidth=1)
+    plt.scatter(mx[:-1], lx[:-1], color='b', marker='o', label="Data Points")
+    plt.scatter(mx[-1], lx[-1], color='r', marker='s',label='Extrapolated Data')
+
+
+    plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
+
+    plt.tight_layout()
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p4a.png"))
+    return
+
+
+
+def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
+
+    spec = {'M': np.zeros(len(spectra_grid)),
+            'FGK': np.zeros(len(spectra_grid)),
+            'BA': np.zeros(len(spectra_grid)),
+            'O': np.zeros(len(spectra_grid)),
+            'all': np.zeros(len(spectra_grid))}
+
+    frac = {'M': 0.0, 'FGK': 0.0, 'BA': 0.0, 'O': 0.0}
+
+    # Mass, Teff, Lum, mass_grid, n_pdf, m_pdf all same size
+    i = 0
+
+    for i in range(len(mass_grid)):
+        if mass_grid[i] < 0.43:  # M
+            w, f, l = read_fits_table(Teff[i], mass_grid[i])
+            interpolated_surface_lum = np.interp(spectra_grid, w, l)
+            spec['M'] += interpolated_surface_lum * n_pdf[i]
+            frac['M'] += n_pdf[i]
+
+        elif mass_grid[i] < 2.0:  # FGK
+            w, f, l = read_fits_table(Teff[i], mass_grid[i])
+            interpolated_surface_lum = np.interp(spectra_grid, w, l)
+            spec['FGK'] += interpolated_surface_lum * n_pdf[i]
+            frac['FGK'] += n_pdf[i]
+
+        elif mass_grid[i] < 20.0:  # BA
+            w, f, l = read_fits_table(Teff[i], mass_grid[i])
+            interpolated_surface_lum = np.interp(spectra_grid, w, l)
+            spec['BA'] += interpolated_surface_lum * n_pdf[i]
+            frac['BA'] += n_pdf[i]
+
+        else:  # O
+            w, f, l = read_fits_table(Teff[i], mass_grid[i])
+            interpolated_surface_lum = np.interp(spectra_grid, w, l)
+            spec['O'] += interpolated_surface_lum * n_pdf[i]
+            frac['O'] += n_pdf[i]
+
+    spec['all'] = spec['O'] + spec['BA'] + spec['FGK'] + spec['M']
+
+    fig = plt.figure(figsize=(9,6))
+    plt.gca().set_xscale("log")
+    plt.gca().set_yscale("log")
+    plt.xlim(100, 1e6)
+    plt.ylim(0.01, 1e6)
+    plt.title(title)
+    plt.ylabel(r'$L/L_{\odot}$')
+    plt.xlabel(r'$\lambda$ [$\AA$]')
+
+    #"0.08 < M < 0.43 M_{\odot}"
+
+    plt.plot(spectra_grid, spec['M'] / L_sun, color='red', label=r'0.08 $\leq$ $M_*$ < 0.43 $M_{\odot}$' +
+                                                                 '\nfrac %0.3f' % frac['M'])  # lightest
+    plt.plot(spectra_grid, spec['FGK'] / L_sun, color='orange', label=r'0.43 $\leq$ $M_*$ < 2.00 $M_{\odot}$' +
+                                                                      '\nfrac %0.3f' % frac['FGK'])
+    plt.plot(spectra_grid, spec['BA'] / L_sun, color='green', label=r'2.00 $\leq$ $M_*$ < 20.0 $M_{\odot}$' +
+                                                                    '\nfrac %0.3f' % frac['BA'])
+    plt.plot(spectra_grid, spec['O'] / L_sun, color='blue', label=r'20.0 $\leq$ $M_*$ < 100 $M_{\odot}$' +
+                                                                  '\nfrac %0.3f' % frac['O'])  # heaviest
+    plt.plot(spectra_grid, spec['all'] / L_sun, color='black', linestyle='dotted', label='All')
+
+    plt.legend(loc='upper left', bbox_to_anchor=(1.02, 0.98), borderaxespad=0)
+
+    fig.tight_layout()
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, fn))
+    plt.close()
+
+
+def prob_4b(mass_grid, n_pdf, Teff, spectra_grid):
+
+    spec = np.zeros(len(spectra_grid))
+
+    for i in range(len(mass_grid)):
+        w, f, l = read_fits_table(Teff[i], mass_grid[i])
+        interpolated_surface_lum = np.interp(spectra_grid, w, l)
+        spec += interpolated_surface_lum * n_pdf[i]
+
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.gca().set_yscale("log")
+    plt.xlim(100, 1e6)
+    plt.ylim(0.01, 1e6)
+    plt.title("Integrated Population Spectra")
+    plt.ylabel(r'$L/L_{\odot}$')
+    plt.xlabel(r'$\lambda$ [$\AA$]')
+    plt.plot(spectra_grid, spec / L_sun, color='k')
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p4b.png"))
+    plt.close()
+
+
+def prob_4c(mass_grid, n_pdf, Teff, spectra_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+                               title="Integrated Population Spectra", fn="hw1_p4c.png")
+
+def prob_4d1(mass_grid, n_pdf, Teff, spectra_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+                               title="Integrated Population Spectra Aged 500Myr", fn="hw1_p4d1.png")
+
+def prob_4d2(mass_grid, n_pdf, Teff, spectra_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+                               title="Integrated Population Spectra Aged 1 Gyr", fn="hw1_p4d2.png")
+
 
 def main():
 
@@ -555,8 +848,34 @@ def main():
     #prob_3a()
     #prob_3b ...text work only
     #prob_3c ...text work only
-    prob_3d()
-    prob_3e()
+    #prob_3d()
+    #prob_3e()
+
+
+
+    # #
+    prob_4a()
+
+    #need these for most of what follows, so just do it once
+    mass_step = 0.01
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
+    spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
+
+    prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+
+    #have to rebuild for different ages (remaining masses)
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    prob_4d1(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+
+    #have to rebuild for different ages (remaining masses)
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.14, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    prob_4d2(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+
+    #prob_4e() ... write-up only
 
 
 if __name__ == '__main__':
