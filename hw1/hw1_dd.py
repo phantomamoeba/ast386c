@@ -363,6 +363,8 @@ def prob_3d():
 
     plt.close('all')
 
+
+
     min_mass = 0.08
     max_mass = 100.0
     mass_step = 0.01
@@ -385,37 +387,58 @@ def prob_3d():
     #want 100% at 0.08 mass and 0% at 100.0 mass
     cdf = np.flip(np.cumsum(np.flip(weighted_lums,0)),0)
 
-    plt.figure()
+    plt.figure(figsize=(9, 6))
     plt.gca().set_xscale("log")
     plt.xlim(min_mass,max_mass)
     #plt.ylim(0.0,1.0)
     plt.title(r"Salpeter IMF ($\alpha$ = -2.35)")
     plt.ylabel("Cumulative Luminosity Fraction $f_L$(>m)")
     plt.xlabel("$M_{*}/M_{\odot}$")
-    plt.plot(mass_grid,cdf,lw=10., alpha=0.4, c='k')
+    plt.plot(mass_grid,cdf,lw=10., alpha=0.4, c='k',label="Direct Sum")
 
 
     #analytically ... piecewise integration
     mg20 = np.linspace(20.,100.,100)
-    mg2 = np.linspace(2., 20., 100)
-    mg43 = np.linspace(0.43,2.0,100)
-    mg08 = np.linspace(0.08,0.43,100)
+    mg2 = np.linspace(2.,19.999, 100)
+    mg43 = np.linspace(0.43,1.999,100)
+    mg08 = np.linspace(0.08,0.42999,100)
+
+    # mg20 = []
+    # mg2 = []
+    # mg43 = []
+    # mg08 = []
+    #
+    # for m in np.logspace(-1.0969,2.,1000):
+    #     mass = 10.**m
+    #     if mass < 0.43:
+    #         mg08.append(mass)
+    #     elif mass < 2.0:
+    #         mg43.append(mass)
+    #     elif mass < 20.0:
+    #         mg2.append(mass)
+    #     else:
+    #         mg20.append(mass)
+    #
+    # mg20 = np.array(mg20)
+    # mg2 = np.array(mg2)
+    # mg43 = np.array(mg43)
+    # mg08 = np.array(mg08)
 
 
     #fxx functions are the results of integrating dn/dm * dm/dl * L *dl over the requisite mass range
-    def f20(m):
-        return ((3200.)/((-0.35) * np.log(10.))*(100.**(-0.35) - m**(-0.35)))
+    def f20(m): #20-100 M_sun
+        return 3200.0/((-0.35) * np.log(10.))*(100.**(-0.35) - m**(-0.35))
 
-    def f2(m):
+    def f2(m): #2 - 20 M_sun
         return 0.303 * (629.9 - m**(43./20.))
 
-    def f43(m):
+    def f43(m): #0.43 - 2 M_sun
         return 0.163885 * (6.27667 - m ** (53./20.))
 
-    def f08(m):
+    def f08(m): #0.08 - 0.43 M_sun
         return 0.1051449 * (0.44853 - m ** (19./20.) )
 
-
+    #all luminosity above the given mass
     a20 = f20(20.)
     a2 = f2(2.)
     a43 = f43(0.43)
@@ -423,13 +446,17 @@ def prob_3d():
 
     tot = a20 + a2 + a43 + a08
 
-    plt.plot(mg20,f20(mg20)/tot,color='b')
-    plt.plot(mg2, ( a20 + f2(mg2))/tot, color='g')
-    plt.plot(mg43, (a20 + a2 + f43(mg43)) / tot, color='orange')
-    plt.plot(mg08, (a20 + a2 + a43 + f08(mg08)) / tot, color='r')
+    plt.plot(mg20,f20(mg20)/tot,color='b',label=r'20.0 $\leq$ $M_*$ < 100 $M_{\odot}$' + '\npiece-wise integration')
+    plt.plot(mg2, ( a20 + f2(mg2))/tot, color='g',label=r'2.00 $\leq$ $M_*$ < 20.0 $M_{\odot}$'+ '\npiece-wise integration')
+    plt.plot(mg43, (a20 + a2 + f43(mg43)) / tot, color='orange',label=r'0.43 $\leq$ $M_*$ < 2.00 $M_{\odot}$'+ '\npiece-wise integration')
+    plt.plot(mg08, (a20 + a2 + a43 + f08(mg08)) / tot, color='r',label=r'0.08 $\leq$ $M_*$ < 0.43 $M_{\odot}$'+ '\npiece-wise integration')
 
-    plt.show()
-#    plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
+    plt.legend(loc='upper left', bbox_to_anchor=(1.02, 0.98), borderaxespad=0)
+
+    plt.tight_layout()
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
 
 
 def prob_3e():
@@ -664,7 +691,7 @@ def prob_4a():
 
     plt.plot(Mass, Teff, color='k', linewidth=1)
     plt.scatter(mx[:-1], tx[:-1], color='b', marker='o', label="Data Points")
-    plt.scatter(mx[-1], tx[-1], color='r', marker='s',label='Extrapolated Data')
+    plt.scatter(mx[-1], tx[-1], color='r', marker='s',label='Synthetic Data')
     plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
 
 
@@ -678,7 +705,7 @@ def prob_4a():
 
     plt.plot(Mass, Lum, color='k', linestyle="-", alpha=1.0, linewidth=1)
     plt.scatter(mx[:-1], lx[:-1], color='b', marker='o', label="Data Points")
-    plt.scatter(mx[-1], lx[-1], color='r', marker='s',label='Extrapolated Data')
+    plt.scatter(mx[-1], lx[-1], color='r', marker='s',label='Synthetic Data')
     plt.legend(loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
 
     plt.tight_layout()
@@ -749,8 +776,8 @@ def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
     plt.legend(loc='upper left', bbox_to_anchor=(1.02, 0.98), borderaxespad=0)
 
     fig.tight_layout()
-    #plt.show()
-    plt.savefig(op.join(OUTDIR, fn))
+    plt.show()
+    #plt.savefig(op.join(OUTDIR, fn))
     plt.close()
 
 
@@ -828,16 +855,16 @@ def main():
     ##########################
 
     # #
-    # prob_4a()
+    #prob_4a()
     #
     # #need these for most of what follows, so just do it once
-    # mass_step = 0.01
-    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
-    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
-    # spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
+    mass_step = 1.0
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
+    spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
     #
     # prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-    # prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
     #
     # #have to rebuild for different ages (remaining masses)
     # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
