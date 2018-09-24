@@ -104,7 +104,7 @@
 	 \item %PROBLEM 2c
 	 What do you notice about the values and the shape of the spectrum of Vega?\\	 
 	 
-	 Since Vega is a real star, its spectrum is not flat and there are obvious spectral features. In the optical (g-band) it is generally brighter than the reference 3631Jy and fainter in all other provided bands (r,i,z,y), declining toward the red.\\
+	 Since Vega is a real star, its spectrum is not flat and there are obvious spectral features. In the optical (g-band) it is generally brighter than the reference 3631Jy and fainter in all other provided bands (r,i,z,y), declining toward the red. Spectral feature aside, it is roughly a black body (more obvious in the second plot of (2d)).\\
 
 \newpage 
 	 
@@ -241,7 +241,7 @@
 		  
 	I begin by ingesting the EEM\_dwarf\_UBVIJHK\_colors\_Teff.txt (adding a synthetic data point at the high mass end for a 100$M_{\odot}$ star at $45000^{\circ} K$, per the footnote, and interpolating in between) and convert the reported fluxes into luminosities with:\\
 	
-		 \hspace{10mm} $L = f \cdot 4\pi R^2$ \hspace{5mm} where $R^2 = \frac{\displaystyle G \cdot M} {\displaystyle 10^{log_g}}$\\
+		 \hspace{10mm} $L = f \cdot 4\pi R_{*}^2$ \hspace{5mm} where $R_{*}^2 = \frac{\displaystyle G \cdot M} {\displaystyle 10^{log_g}}$\\
 		 
 	I then simply plot the temperature data and (separately) the computed luminosities vs the mass data. Both plots show similar trends, but the luminosity grows much faster with increasing mass (covering almost 10 orders of magnitude over our mass range vs just over 1 dex for the temperature).\\
 
@@ -256,7 +256,9 @@
 			  		\label{fig:fig8}
 		  \end{figure}
 		  
-	Each spectra is read from the kp00\_*.txt file that is nearest in temperature to each star (from an evenly spaced grid (0.08, 100.0) $M_{\odot}$ with a width of 0.01$M_{\odot}$). The fluxes are converted to luminosities (as in (4a)) and multiplied by the wavelengths to get $\lambda L_{\lambda}$ (or, equivalently $\nu L_{\nu}$, if you prefer), then normalized by $L_{\odot, bol}$ and finally summed, weighted by the relative number fraction from the Salpeter MDF (from problem 3).\\
+%	Each spectra is read from the kp00\_*.txt file that is nearest in temperature to each star (from an evenly spaced grid (0.08, 100.0) $M_{\odot}$ with a width of 0.01$M_{\odot}$). The fluxes are converted to luminosities (as in (4a)) and multiplied by the wavelengths to get $\lambda L_{\lambda}$ (or, equivalently $\nu L_{\nu}$, if you prefer), then normalized by $L_{\odot, bol}$ and finally summed, weighted by the relative number fraction from the Salpeter MDF (from problem 3).\\
+
+	Each spectra is read from the kp00\_*.txt file that is nearest in temperature to each star (corresponding to an evenly spaced grid (0.08, 100.0) $M_{\odot}$ with a width of 0.01$M_{\odot}$ and with a floor of 3500K). The fluxes (interpolated between nearest datapoints by wavelength) are use as $\propto$ luminosities (with the assumption that the distances to the stars in the population is effectively the same and (obviously) much greater than the stellar radii) and multiplied by the wavelengths to get values $\propto$ $\lambda L_{\lambda}$ (or, equivalently $\nu L_{\nu}$, if you prefer), and finally summed, weighted by the relative number fraction from the Salpeter MDF (from problem 3)
 	
 		  
 \newpage 		  
@@ -272,11 +274,11 @@
 			  
 	Here we have essentially the same plot as in (4b) but additionally sub-selected by mass range (as well as one plot with all stars included). The four mass ranges are those from (3b). The steps are otherwise identical to (4b). As in problem 3, we can clearly see the dominance of the high mass stars, noting that the weighted sum of all stars is almost replicated by just the 20+ $M_{\odot}$ stars (especially short-ward of $\sim$ 1000$\AA$).\\
 
-\newpage 
+
 			  
 	\item %PROBLEM 4d
 		Aging Integrated Population Spectra by Mass Range :
-
+\newpage 
 			\begin{figure}[H]
 			  		\includegraphics[width=\linewidth]{hw1_p4d1.png}
 			  		%\caption{}
@@ -289,14 +291,14 @@
 			  		\label{fig:fig11}
 			\end{figure}
 
-	In both plots, I simply repeat the steps of (4c), removing all stars that have aged off the Main Sequence after the reported time (as in problem 3e). Again, we see the integrated spectra is still mostly shaped by the most massive of the remaining stars (especially at shorter wavelengths), but the contributions of the far more numerous lighter stars becomes increasingly significant on the more red-ward end.\\
+	In both plots, I simply repeat the steps of (4c), removing all stars that have aged off the Main Sequence after the reported time (as in problem 3e). Again, we see the integrated spectra is still mostly shaped by the most massive of the remaining stars (especially at shorter wavelengths), but the contributions of the far more numerous lighter stars becomes increasingly significant on the more red-ward end. (Note for easier comparison, I kept the scale of all plots the same.)\\
 
 	\item %PROBLEM 4e
 		Observations about population models:\\
 		
 		The basic shape of each spectra is that of a blackbody (ignoring the extra emission and absorption features), a bit smeared out since we have a range of temperatures. For the hotter stars, we can see additional features in the UV (such as a step drop off blue-ward of 916$\AA$) where the emission from cooler stars is far less (below the plotting limits). There are, perhaps, more absorption features in the cooler stars, particularly between 3000 and 10000 $\AA$, where the cooler surface temperature can allow for some molecules (e.g. TiO) and incomplete ionizations.\\
 		
-		The hottest stars dominate the spectra over all wavelength ranges. While their peak emission is in the UV, they are brighter at all wavelengths than the cooler, less massive stars. As the population ages however, and these massive stars die, the less massive stars, due to their shear dominance in numbers, start to take over as the main contributors to the spectra at longer wavelengths (red-ward of 1.2 or 1.3$\mu m$)\\
+		The hottest stars dominate the spectra over all wavelength ranges. While their peak emission is in the UV, they are brighter at all wavelengths than the cooler, less massive stars. As the population ages however, and these massive stars die, the less massive stars, due to their shear dominance in numbers, start to become significant contributors to the spectra at longer wavelengths (red-ward of about 1 $\mu m$).\\
 		
     
     \end{enumerate}

@@ -184,7 +184,7 @@ def prob_2d(star):
 
     fig = plt.figure()
     plt.title('Vega Luminosity')
-    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}$]')
+    plt.ylabel(r'$\nu L_\nu$ & $\lambda L_\lambda$ [$erg\ s^{-1}\ cm^{-2}$]')
     plt.xlabel('Wavelength [$\AA$]')
 
     plt.yscale('log')
@@ -455,8 +455,8 @@ def prob_3d():
 
     plt.tight_layout()
 
-    #plt.show()
-    plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
+    plt.show()
+    #plt.savefig(op.join(OUTDIR, "hw1_p3d.png"))
 
 
 def prob_3e():
@@ -670,7 +670,7 @@ def read_fits_table(t_eff, mass):
     radius = radius_of_star(log_g, mass)
     l = surface_flux_lambda_to_vLv(f, w, radius)
 
-    return w, f * w, l * w  # wavelengths and flux (in lam*f_lam, cgs)
+    return w,  f * w, l / L_sun # wavelengths and flux (in lam*f_lam, cgs), lum in L_sun
 
 def prob_4a():
 
@@ -716,40 +716,44 @@ def prob_4a():
 
 
 
-def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
+def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,title,fn):
 
-    spec = {'M': np.zeros(len(spectra_grid)),
-            'FGK': np.zeros(len(spectra_grid)),
-            'BA': np.zeros(len(spectra_grid)),
-            'O': np.zeros(len(spectra_grid)),
-            'all': np.zeros(len(spectra_grid))}
+    spec = {'M': np.zeros(len(wavelength_grid)),
+            'FGK': np.zeros(len(wavelength_grid)),
+            'BA': np.zeros(len(wavelength_grid)),
+            'O': np.zeros(len(wavelength_grid)),
+            'all': np.zeros(len(wavelength_grid))}
 
     frac = {'M': 0.0, 'FGK': 0.0, 'BA': 0.0, 'O': 0.0}
 
     # Mass, Teff, Lum, mass_grid, n_pdf, m_pdf all same size
     for i in range(len(mass_grid)):
         if mass_grid[i] < 0.43:  # M
-            w, f, l = read_fits_table(Teff[i], mass_grid[i])
-            interpolated_surface_lum = np.interp(spectra_grid, w, l)
-            spec['M'] += interpolated_surface_lum * n_pdf[i]
+            w, l, f = read_fits_table(Teff[i], mass_grid[i])
+            #interpolated_surface_lum = np.interp(wavelength_grid, w, l)
+            interpolated_flux = np.interp(wavelength_grid, w, f)
+            spec['M'] += interpolated_flux * n_pdf[i]
             frac['M'] += n_pdf[i]
 
         elif mass_grid[i] < 2.0:  # FGK
-            w, f, l = read_fits_table(Teff[i], mass_grid[i])
-            interpolated_surface_lum = np.interp(spectra_grid, w, l)
-            spec['FGK'] += interpolated_surface_lum * n_pdf[i]
+            w, l, f = read_fits_table(Teff[i], mass_grid[i])
+            #interpolated_surface_lum = np.interp(wavelength_grid, w, l)
+            interpolated_flux = np.interp(wavelength_grid, w, f)
+            spec['FGK'] += interpolated_flux * n_pdf[i]
             frac['FGK'] += n_pdf[i]
 
         elif mass_grid[i] < 20.0:  # BA
-            w, f, l = read_fits_table(Teff[i], mass_grid[i])
-            interpolated_surface_lum = np.interp(spectra_grid, w, l)
-            spec['BA'] += interpolated_surface_lum * n_pdf[i]
+            w, l, f = read_fits_table(Teff[i], mass_grid[i])
+            #interpolated_surface_lum = np.interp(wavelength_grid, w, l)
+            interpolated_flux = np.interp(wavelength_grid, w, f)
+            spec['BA'] += interpolated_flux * n_pdf[i]
             frac['BA'] += n_pdf[i]
 
         else:  # O
-            w, f, l = read_fits_table(Teff[i], mass_grid[i])
-            interpolated_surface_lum = np.interp(spectra_grid, w, l)
-            spec['O'] += interpolated_surface_lum * n_pdf[i]
+            w, l, f = read_fits_table(Teff[i], mass_grid[i])
+            #interpolated_surface_lum = np.interp(wavelength_grid, w, l)
+            interpolated_flux = np.interp(wavelength_grid, w, f)
+            spec['O'] += interpolated_flux * n_pdf[i]
             frac['O'] += n_pdf[i]
 
     spec['all'] = spec['O'] + spec['BA'] + spec['FGK'] + spec['M']
@@ -757,64 +761,72 @@ def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,title,fn):
     fig = plt.figure(figsize=(9,6))
     plt.gca().set_xscale("log")
     plt.gca().set_yscale("log")
-    plt.xlim(100, 1e6)
-    plt.ylim(0.01, 1e6)
+    plt.xlim(2e2, 3e4) #out to about 3 microns
+    plt.ylim(1e-3, 1e3)
+    #plt.ylim(ymin=0.001)
+    #plt.ylim(0.001, 1e6)
+    #plt.gca().set_ylim(bottom=0.001)
     plt.title(title)
-    plt.ylabel(r'$L/L_{\odot}$')
+    #plt.ylabel(r'$L/L_{\odot}$')
+    plt.ylabel(r'$\propto \nu L_{\nu}$')# $[erg\ s^{-1}\ cm^{-2}]$')
     plt.xlabel(r'$\lambda$ [$\AA$]')
 
-    plt.plot(spectra_grid, spec['M'] / L_sun, color='red', label=r'0.08 $\leq$ $M_*$ < 0.43 $M_{\odot}$' +
+    plt.plot(wavelength_grid, spec['M'] , color='red', label=r'0.08 $\leq$ $M_*$ < 0.43 $M_{\odot}$' +
                                                                  '\nfrac %0.3f' % frac['M'])  # lightest
-    plt.plot(spectra_grid, spec['FGK'] / L_sun, color='orange', label=r'0.43 $\leq$ $M_*$ < 2.00 $M_{\odot}$' +
+    plt.plot(wavelength_grid, spec['FGK'] , color='orange', label=r'0.43 $\leq$ $M_*$ < 2.00 $M_{\odot}$' +
                                                                       '\nfrac %0.3f' % frac['FGK'])
-    plt.plot(spectra_grid, spec['BA'] / L_sun, color='green', label=r'2.00 $\leq$ $M_*$ < 20.0 $M_{\odot}$' +
+    plt.plot(wavelength_grid, spec['BA'] , color='green', label=r'2.00 $\leq$ $M_*$ < 20.0 $M_{\odot}$' +
                                                                     '\nfrac %0.3f' % frac['BA'])
-    plt.plot(spectra_grid, spec['O'] / L_sun, color='blue', label=r'20.0 $\leq$ $M_*$ < 100 $M_{\odot}$' +
+    plt.plot(wavelength_grid, spec['O'] , color='blue', label=r'20.0 $\leq$ $M_*$ < 100 $M_{\odot}$' +
                                                                   '\nfrac %0.3f' % frac['O'])  # heaviest
-    plt.plot(spectra_grid, spec['all'] / L_sun, color='black', linestyle='dotted', label='All')
+    plt.plot(wavelength_grid, spec['all'] , color='black', linestyle='dotted', label='All')
 
     plt.legend(loc='upper left', bbox_to_anchor=(1.02, 0.98), borderaxespad=0)
+    #plt.legend(loc='lower right')
 
     fig.tight_layout()
-    plt.show()
-    #plt.savefig(op.join(OUTDIR, fn))
+    #plt.show()
+    plt.savefig(op.join(OUTDIR, fn))
     plt.close()
 
 
-def prob_4b(mass_grid, n_pdf, Teff, spectra_grid):
+def prob_4b(mass_grid, n_pdf, Teff, wavelength_grid):
 
-    spec = np.zeros(len(spectra_grid))
+    spec = np.zeros(len(wavelength_grid))
 
     for i in range(len(mass_grid)):
-        w, f, l = read_fits_table(Teff[i], mass_grid[i])
-        interpolated_surface_lum = np.interp(spectra_grid, w, l)
-        spec += interpolated_surface_lum * n_pdf[i]
+        w, l, f = read_fits_table(Teff[i], mass_grid[i])
+        #interpolated_surface_lum = np.interp(wavelength_grid, w, l)
+        interpolated_flux = np.interp(wavelength_grid, w, f)
+        spec += interpolated_flux * n_pdf[i]
 
     plt.figure()
     plt.gca().set_xscale("log")
     plt.gca().set_yscale("log")
-    plt.xlim(100, 1e6)
-    plt.ylim(0.01, 1e6)
+    plt.xlim(2e2, 3e4) #out to about 3 microns
+    plt.ylim(1e-3, 1e3)
+    #plt.ylim(0.001, 1e6)
+    #plt.gca().set_ylim(bottom=0.001)
     plt.title("Integrated Population Spectra")
-    plt.ylabel(r'$L/L_{\odot}$')
+    plt.ylabel(r'$\propto \nu L_{\nu}$')# $[erg\ s^{-1}\ cm^{-2}]$')
     plt.xlabel(r'$\lambda$ [$\AA$]')
-    plt.plot(spectra_grid, spec / L_sun, color='k')
+    plt.plot(wavelength_grid, spec, color='k')
 
     #plt.show()
     plt.savefig(op.join(OUTDIR, "hw1_p4b.png"))
     plt.close()
 
 
-def prob_4c(mass_grid, n_pdf, Teff, spectra_grid):
-    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+def prob_4c(mass_grid, n_pdf, Teff, wavelength_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
                                title="Integrated Population Spectra", fn="hw1_p4c.png")
 
-def prob_4d1(mass_grid, n_pdf, Teff, spectra_grid):
-    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+def prob_4d1(mass_grid, n_pdf, Teff, wavelength_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
                                title="Integrated Population Spectra Aged 500Myr", fn="hw1_p4d1.png")
 
-def prob_4d2(mass_grid, n_pdf, Teff, spectra_grid):
-    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, spectra_grid,
+def prob_4d2(mass_grid, n_pdf, Teff, wavelength_grid):
+    plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
                                title="Integrated Population Spectra Aged 1 Gyr", fn="hw1_p4d2.png")
 
 
@@ -832,10 +844,10 @@ def main():
     #            }
     #
     # star = Star('A0V', op.join(BASEDIR, "spectrum_A0V.txt"))
-    #
-    # prob_2a(filters, star)
-    # prob_2b(filters,star)
-    # #prob_2c (latex only)
+    # #
+    # # prob_2a(filters, star)
+    # # prob_2b(filters,star)
+    # # #prob_2c (latex only)
     # prob_2d(star)
 
 
@@ -846,7 +858,7 @@ def main():
     #prob_3a()
     #prob_3b ...text work only
     #prob_3c ...text work only
-    prob_3d()
+    #prob_3d()
     #prob_3e()
 
 
@@ -858,23 +870,24 @@ def main():
     #prob_4a()
     #
     # #need these for most of what follows, so just do it once
-    mass_step = 1.0
+    mass_step = 0.01
     mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 100.0, mass_step)
+
     Mass, Teff, Lum, mx, tx, lx = read_EEM_file( mass_grid)  # (min_mass,max_mass,step) #m,t,l are the original few data
-    spectra_grid = np.arange(90, 1.6e6, 1)  # weighted population surface luminiosity spectra in vLv units by angstrom
+    wavelength_grid = np.arange(90, 1.6e6, 1)  # in angstroms (wavelengths_grid)
     #
-    # prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-    prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-    #
-    # #have to rebuild for different ages (remaining masses)
-    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
-    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
-    # prob_4d1(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
-    #
-    # #have to rebuild for different ages (remaining masses)
-    # mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.14, mass_step)
-    # Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
-    # prob_4d2(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, spectra_grid=spectra_grid)
+    prob_4b(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, wavelength_grid=wavelength_grid)
+    prob_4c(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, wavelength_grid=wavelength_grid)
+
+    #have to rebuild for different ages (remaining masses)
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.82, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    prob_4d1(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, wavelength_grid=wavelength_grid)
+
+    #have to rebuild for different ages (remaining masses)
+    mass_grid, n_pdf, m_pdf = do_salpeter(0.08, 2.14, mass_step)
+    Mass, Teff, Lum, mx, tx, lx = read_EEM_file(mass_grid)
+    prob_4d2(mass_grid=mass_grid, n_pdf=n_pdf, Teff=Teff, wavelength_grid=wavelength_grid)
 
     #prob_4e() ... write-up only
 
