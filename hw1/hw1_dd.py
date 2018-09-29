@@ -14,7 +14,7 @@ import matplotlib.cm as cmx
 import astropy.table
 
 
-BASEDIR = "res"
+BASEDIR = "../res"
 OUTDIR = "out"
 
 c_const = 2.99792458e18 #angstroms/sec
@@ -716,7 +716,7 @@ def prob_4a():
 
 
 
-def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,title,fn):
+def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,title,fn,age=None):
 
     spec = {'M': np.zeros(len(wavelength_grid)),
             'FGK': np.zeros(len(wavelength_grid)),
@@ -789,6 +789,13 @@ def plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,title,fn)
     plt.savefig(op.join(OUTDIR, fn))
     plt.close()
 
+    if age is not None:
+        np.save(op.join(OUTDIR, "spec_wave"), wavelength_grid, allow_pickle=True)
+        np.save(op.join(OUTDIR, "spec_m0p08_m0p43_age%d" % age), spec['M'], allow_pickle=True)
+        np.save(op.join(OUTDIR, "spec_m0p43_m2_age%d" % age), spec['FGK'], allow_pickle=True)
+        np.save(op.join(OUTDIR, "spec_m2_m20_age%d" % age), spec['BA'], allow_pickle=True)
+        np.save(op.join(OUTDIR, "spec_m20_m100_age%d" % age), spec['O'], allow_pickle=True)
+
 
 def prob_4b(mass_grid, n_pdf, Teff, wavelength_grid):
 
@@ -817,17 +824,18 @@ def prob_4b(mass_grid, n_pdf, Teff, wavelength_grid):
     plt.close()
 
 
-def prob_4c(mass_grid, n_pdf, Teff, wavelength_grid):
+def prob_4c(mass_grid, n_pdf, Teff, wavelength_grid,age=None):
     plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
-                               title="Integrated Population Spectra", fn="hw1_p4c.png")
+                               title="Integrated Population Spectra", fn="hw1_p4c.png",age=age)
 
-def prob_4d1(mass_grid, n_pdf, Teff, wavelength_grid):
+def prob_4d1(mass_grid, n_pdf, Teff, wavelength_grid,age=None):
     plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
-                               title="Integrated Population Spectra Aged 500Myr", fn="hw1_p4d1.png")
+                               title="Integrated Population Spectra Aged 500Myr", fn="hw1_p4d1.png",age=age)
 
-def prob_4d2(mass_grid, n_pdf, Teff, wavelength_grid):
+def prob_4d2(mass_grid, n_pdf, Teff, wavelength_grid,age=None):
     plot_spectra_by_mass_range(mass_grid, n_pdf, Teff, wavelength_grid,
-                               title="Integrated Population Spectra Aged 1 Gyr", fn="hw1_p4d2.png")
+                               title="Integrated Population Spectra Aged 1 Gyr", fn="hw1_p4d2.png",age=age)
+
 
 
 def main():
