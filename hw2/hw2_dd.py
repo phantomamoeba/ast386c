@@ -38,6 +38,9 @@ MAX_WAVE = 1e6 #AA
 
 def read_calzetti():
     #return the interpolated wavelength array and A_lambda array
+    # second column is  A in V-band as a function of wavelength;
+    # s|t R_V == A_V/(A_B - A_V)  (or R_V = A_V/ E(B-V) ) where '_' == subscript
+    # *** in other words, the second column is R_V*E(B-V)) ****
     #fo_fi_grid is f_observered/f_intrinsic for the 1AA width spectra grid and E(B-V)==1.0
     w,a = np.genfromtxt(op.join(BASEDIR,"calzetti01.txt"),unpack=True)
     w = np.insert(w,0,90.0)
@@ -66,6 +69,9 @@ def chisqr(obs, exp, error=None):
     return chisqr
 
 
+def getnearpos(array,value):
+    idx = (np.abs(array-value)).argmin()
+    return idx
 
 #################################
 # Commons
@@ -76,10 +82,25 @@ SPECTRA_GRID_MICRONS = SPECTRA_GRID_AA / 10000.
 
 def prob2a():
     #plot the attenuation (f_obs/f_intrinsic) = 10^(-0.4 A) for E(B-V) = 0.1 and E(B-V)= 1.0
-    #don't need an IMF, this is just vs wavelength
 
     e0p1_grid = 10 ** (-0.4 * A_LAMBDA_GRID * 0.1)
     e1p0_grid = 10 ** (-0.4 * A_LAMBDA_GRID)
+
+
+    #A_v_0p1 = np.sum()
+    start = getnearpos(SPECTRA_GRID_AA,4500)
+    stop = getnearpos(SPECTRA_GRID_AA,7500)
+    sum = 0
+    for i in range(start,stop): #indicies of roughly V-Band (5060AA - 5940AA)
+        sum += A_LAMBDA_GRID[i] * (SPECTRA_GRID_AA[i+1] - SPECTRA_GRID_AA[i])
+
+    Av_1p0 = sum / (stop-start) #this is R_V*E(B-V) with E(B-V) == 1.0
+    Av_0p1 = Av_1p0 * 0.1 #just trying to keep this clear
+
+    print("V-band [5000-7000AA]")
+    print("R_V (for E(B-V) = 0.1) ~ %f" %(Av_0p1/0.1)) #change to E(B-V == 0.1)
+    print("R_V (for E(B-V) = 1.0) ~ %f" %(Av_1p0/1.0))
+
 
     plt.figure()
     plt.gca().set_xscale("linear")
@@ -90,16 +111,21 @@ def prob2a():
     plt.ylabel(r'$f_{obs}/f_{int}$')  # / $L_{\odot}$) in  units')
     plt.xlabel(r'Log($\lambda$) [$\AA$]')
 
-    leg_1, = plt.plot(np.log10(SPECTRA_GRID_AA), e0p1_grid, color='b')
-    leg_2, = plt.plot(np.log10(SPECTRA_GRID_AA), e1p0_grid, color='r')
+    plt.plot(np.log10(SPECTRA_GRID_AA), e0p1_grid, color='b',label="E(B-V)=0.1")
+    plt.plot(np.log10(SPECTRA_GRID_AA), e1p0_grid, color='r',label="E(B-V)=1.0")
 
+    rec = plt.Rectangle((np.log10(5000),0.0), np.log10(7000)-np.log10(5000),1.0, fill=True, lw=1,
+                        color='g', alpha=0.5,label="Approx V-band")
+    plt.gca().add_patch(rec)
 
-    plt.legend([leg_1, leg_2],
-               ('E(B-V) = 0.1','E(B-V) = 1.0'),
-               loc='upper left', bbox_to_anchor=(0.02, 0.98), borderaxespad=0)
+    rec = plt.Rectangle((np.log10(4000),0.0), np.log10(5000)-np.log10(4000),1.0, fill=True, lw=1,
+                        color='b', alpha=0.5,label="Approx B-band")
+    plt.gca().add_patch(rec)
 
-    #plt.show()
-    plt.savefig(op.join(OUTDIR,"hw2_prob2a.png"))
+    plt.legend(loc='upper left', bbox_to_anchor=(0.02, 0.98), borderaxespad=0)
+
+    plt.show()
+    #plt.savefig(op.join(OUTDIR,"hw2_prob2a.png"))
 
 
 
@@ -176,7 +202,6 @@ def main():
         # plt.show()
 
     prob2a()
-    print("***** Todo: 2(a) what R_v values do these correspond to....?")
 
     exit(0)
 
