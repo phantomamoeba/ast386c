@@ -18,8 +18,89 @@ import matplotlib.cm as cmx
 import astropy.table
 
 
+###############################
+#GLOBALS
+###############################
+
 BASEDIR = "../res"
 OUTDIR = "out"
+
+MIN_MASS = 0.08  #m_sun 0.0076
+MAX_MASS = 100.0  #m_sun 0.0076
+MIN_WAVE = 90.0 #AA
+MAX_WAVE = 1e6 #AA
+
+
+
+##################################
+#Support Functions
+##################################
+
+def read_calzetti():
+    #return the interpolated wavelength array and A_lambda array
+    #fo_fi_grid is f_observered/f_intrinsic for the 1AA width spectra grid and E(B-V)==1.0
+    w,a = np.genfromtxt(op.join(BASEDIR,"calzetti01.txt"),unpack=True)
+    w = np.insert(w,0,90.0)
+    a = np.insert(a,0,90.5)
+
+    #per Characterizing Dust Attenuation in Local Star-forming Galaxies: Near-infrared Reddening and Normalization
+    # Battisti, Calzetti, Chary, 2017
+    w = np.append(w,28500)
+    a = np.append(a,0)
+    spectra_grid = np.arange(MIN_WAVE, MAX_WAVE, 1)
+
+    a_interp = np.interp(spectra_grid, w, a)
+
+    return spectra_grid,a_interp
+
+
+
+def chisqr(obs, exp, error=None):
+    chisqr = 0
+    if error is None:
+        error=np.zeros(len(obs))
+        error += 1.0
+
+    for i in range(len(obs)):
+        chisqr = chisqr + ((obs[i]-exp[i])**2)/(error[i]**2)
+    return chisqr
+
+
+
+#################################
+# Commons
+#################################
+SPECTRA_GRID_AA, A_LAMBDA_GRID = read_calzetti()
+SPECTRA_GRID_MICRONS = SPECTRA_GRID_AA / 10000.
+
+
+def prob2a():
+    #plot the attenuation (f_obs/f_intrinsic) = 10^(-0.4 A) for E(B-V) = 0.1 and E(B-V)= 1.0
+    #don't need an IMF, this is just vs wavelength
+
+    e0p1_grid = 10 ** (-0.4 * A_LAMBDA_GRID * 0.1)
+    e1p0_grid = 10 ** (-0.4 * A_LAMBDA_GRID)
+
+    plt.figure()
+    plt.gca().set_xscale("linear")
+    plt.gca().set_yscale("linear")
+    plt.xlim(2.5,4.5)
+    plt.ylim(-0.01, 1.01)
+    plt.title("Fractional Attenuation by Wavelength")
+    plt.ylabel(r'$f_{obs}/f_{int}$')  # / $L_{\odot}$) in  units')
+    plt.xlabel(r'Log($\lambda$) [$\AA$]')
+
+    leg_1, = plt.plot(np.log10(SPECTRA_GRID_AA), e0p1_grid, color='b')
+    leg_2, = plt.plot(np.log10(SPECTRA_GRID_AA), e1p0_grid, color='r')
+
+
+    plt.legend([leg_1, leg_2],
+               ('E(B-V) = 0.1','E(B-V) = 1.0'),
+               loc='upper left', bbox_to_anchor=(0.02, 0.98), borderaxespad=0)
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR,"hw2_prob2a.png"))
+
 
 
 def main():
@@ -94,6 +175,8 @@ def main():
         # fig.tight_layout()
         # plt.show()
 
+    prob2a()
+    print("***** Todo: 2(a) what R_v values do these correspond to....?")
 
     exit(0)
 
