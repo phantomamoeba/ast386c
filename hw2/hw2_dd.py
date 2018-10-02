@@ -13,6 +13,8 @@ from scipy.integrate import quad
 import math
 import os.path as op
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import astropy.table
@@ -79,13 +81,18 @@ def getnearpos(array,value):
 SPECTRA_GRID_AA, A_LAMBDA_GRID = read_calzetti()
 SPECTRA_GRID_MICRONS = SPECTRA_GRID_AA / 10000.
 
+SPECTRA_GRID_Hz = hw1.c_const / SPECTRA_GRID_AA
+SPECTRA_GRID_Hz = np.flip(SPECTRA_GRID_Hz, axis=0) #flip so is in increasing frequencey order (reversed from wavelength)
+
+EBV_0p1_GRID = 10 ** (-0.4 * A_LAMBDA_GRID * 0.1)
+EBV_1p0_GRID = 10 ** (-0.4 * A_LAMBDA_GRID)
+
+EBV_0p1_GRID_Hz = np.flip(EBV_0p1_GRID, axis=0) #since we flipped the frequence direction, have to do that here too
+EBV_1p0_GRID_Hz = np.flip(EBV_1p0_GRID, axis=0)
+
 
 def prob2a():
     #plot the attenuation (f_obs/f_intrinsic) = 10^(-0.4 A) for E(B-V) = 0.1 and E(B-V)= 1.0
-
-    e0p1_grid = 10 ** (-0.4 * A_LAMBDA_GRID * 0.1)
-    e1p0_grid = 10 ** (-0.4 * A_LAMBDA_GRID)
-
 
     #A_v_0p1 = np.sum()
     start = getnearpos(SPECTRA_GRID_AA,4500)
@@ -111,8 +118,8 @@ def prob2a():
     plt.ylabel(r'$f_{obs}/f_{int}$')  # / $L_{\odot}$) in  units')
     plt.xlabel(r'Log($\lambda$) [$\AA$]')
 
-    plt.plot(np.log10(SPECTRA_GRID_AA), e0p1_grid, color='b',label="E(B-V)=0.1")
-    plt.plot(np.log10(SPECTRA_GRID_AA), e1p0_grid, color='r',label="E(B-V)=1.0")
+    plt.plot(np.log10(SPECTRA_GRID_AA), EBV_0p1_GRID, color='b',label="E(B-V)=0.1")
+    plt.plot(np.log10(SPECTRA_GRID_AA), EBV_1p0_GRID, color='r',label="E(B-V)=1.0")
 
     rec = plt.Rectangle((np.log10(5000),0.0), np.log10(7000)-np.log10(5000),1.0, fill=True, lw=1,
                         color='g', alpha=0.5,label="Approx V-band")
@@ -124,8 +131,170 @@ def prob2a():
 
     plt.legend(loc='upper left', bbox_to_anchor=(0.02, 0.98), borderaxespad=0)
 
-    plt.show()
-    #plt.savefig(op.join(OUTDIR,"hw2_prob2a.png"))
+    #plt.show()
+    plt.savefig(op.join(OUTDIR,"hw2_prob2a.png"))
+
+
+def prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
+
+
+    #plot nine spectra age x extenction
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.gca().set_yscale("log")
+    plt.xlim(1e2,28500)
+    plt.ylim(1e-15,1000)
+    plt.title("Integrated Population Spectra (Aged and Attenuated)")
+    plt.ylabel(r'$\propto \nu L_\nu$')
+    plt.xlabel(r'$\lambda$ [$\AA$]')
+
+    lw = 1.0
+
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_0, color='b',lw=lw,ls="solid")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_0*EBV_0p1_GRID, color='b',lw=lw,ls="--")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_0*EBV_1p0_GRID, color='b',lw=lw,ls=':')
+
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_500, color='g',lw=lw,ls="solid")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_500 * EBV_0p1_GRID, color='g',lw=lw,ls="--")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_500 * EBV_1p0_GRID, color='g',lw=lw, ls=':')
+
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_1000, color='r',lw=lw,ls="solid")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_1000 * EBV_0p1_GRID, color='r',lw=lw,ls="--")
+    plt.plot(SPECTRA_GRID_AA, integrated_spectra_1000 * EBV_1p0_GRID, color='r', lw=lw,ls=':')
+
+    blu_patch = mpatches.Patch(color='b', label='Aged 0 yr')
+    grn_patch = mpatches.Patch(color='g', label='Aged 500 Myr')
+    red_patch = mpatches.Patch(color='r', label='Aged 1 Gyr')
+
+    solid = mlines.Line2D([], [], color='k', linestyle="solid", label='E(B-V) = 0.0')
+    dash = mlines.Line2D([], [], color='k', linestyle="--", label='E(B-V) = 0.1')
+    dots = mlines.Line2D([], [], color='k', linestyle=":", label='E(B-V) = 1.0')
+
+    plt.legend(handles=[blu_patch,grn_patch,red_patch,solid,dash,dots],
+               loc='lower right', bbox_to_anchor=(0.95, 0.05), borderaxespad=0)
+
+    #plt.show()
+    plt.savefig(op.join(OUTDIR,"hw2_prob2b.png"))
+    plt.close()
+
+
+
+def prob2c(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
+
+    g_filter = hw1.Filter('g', op.join(BASEDIR, "subaru_g.txt"))
+    r_filter = hw1.Filter('r', op.join(BASEDIR, "subaru_r.txt"))
+
+    #take the spectra as is ... prop to wLw
+    #divide by w to get Lw
+    #convert to Lv (usual conversion)
+    #convert wavelength grid to frequency
+    #then get attenuation by frequency and use inegration(1/v * Lv * Tv *dv) / integration( (1/v * Tv *dv))
+
+    # note: since integrated_spectra_0 alredy in wLw format, just multiple by w once more to get f*w**2 / c
+    flux_freq_0 = np.flip(integrated_spectra_0 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+    flux_freq_500 = np.flip(integrated_spectra_500 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+    flux_freq_1000 = np.flip(integrated_spectra_1000 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 0 yr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0*EBV_0p1_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0*EBV_0p1_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 0 yr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0*EBV_1p0_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_0*EBV_1p0_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 0 yr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 500 Myr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500*EBV_0p1_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500*EBV_0p1_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 500 Myr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500*EBV_1p0_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_500*EBV_1p0_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 500 Myr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 1 Gyr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000*EBV_0p1_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000*EBV_0p1_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 1 Gyr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+    Fg = g_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000*EBV_1p0_GRID_Hz,False)
+    Fr = r_filter.get_F_nu(SPECTRA_GRID_Hz, flux_freq_1000*EBV_1p0_GRID_Hz,False)
+    g_r_color = -2.5*np.log10(Fg/Fr)
+    print("Aged 1 Gyr, E(B-V) = 0 : g-r color = %0.4f" % g_r_color)
+
+
+
+
+def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
+
+    filters = {'g': hw1.Filter('g', op.join(BASEDIR, "subaru_g.txt")),
+               'r': hw1.Filter('r', op.join(BASEDIR, "subaru_r.txt")),
+               'i': hw1.Filter('i', op.join(BASEDIR, "subaru_i.txt")),
+               'z': hw1.Filter('z', op.join(BASEDIR, "subaru_z.txt")),
+               'y': hw1.Filter('y', op.join(BASEDIR, "subaru_y.txt")),
+               }
+
+    myr = [0,500,1000]
+    att = [np.ones(EBV_0p1_GRID_Hz.shape),EBV_0p1_GRID_Hz,EBV_1p0_GRID_Hz]
+
+    flux_freq = {}
+    flux_freq['0'] = np.flip(integrated_spectra_0 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+    flux_freq['500'] = np.flip(integrated_spectra_500 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+    flux_freq['1000'] = np.flip(integrated_spectra_1000 * SPECTRA_GRID_AA / hw1.c_const, axis=0)  # now prop to f_v
+
+    #get flux in each filter and convert to proportional to uJy
+    solutions = {}
+
+    for age in myr:
+        for i in range(len(att)):
+            skey = str(age) + "myr_" + str(i)
+            flux = {}
+            for key in filters:
+                flux[key] = filters[key].get_F_nu(SPECTRA_GRID_Hz, flux_freq[str(age)],False) * 1e29 #cgs to uJy
+
+            solutions[skey] = flux
+
+    #now we have (not scaled yet) 9 possible solutions
+
+    # galaxy_photo.txt
+    # wave_iso         fnu_uJy    fnu_err_uJy
+    #      2330.00      3.69280     0.510179
+    #      3300.00      10.4355      3.60430
+    #   g  4500.00      45.0000      12.4340
+    #  (v) 5270.00      56.4691      23.4045
+    #   r  6580.00      52.2668      7.22092
+    #   i  8140.00      57.6268      15.9229
+    #   z  9500.00      53.4224      18.4515
+    #   y  10500.0      66.2505      32.0350
+
+
+    #get flux in each filter (grizy) for each of the spectra
+
 
 
 
@@ -178,6 +347,11 @@ def main():
         integrated_spectra_500 = spec_500['M'] + spec_500['FGK'] + spec_500['BA'] + spec_500['O']
         integrated_spectra_1000 = spec_1000['M'] + spec_1000['FGK'] + spec_1000['BA'] + spec_1000['O']
 
+        #now, put these on the same grid as SPECTRA_GRID_AA ... same step and start, so just truncate
+        integrated_spectra_0 = integrated_spectra_0[:len(SPECTRA_GRID_AA)]
+        integrated_spectra_500 = integrated_spectra_500[:len(SPECTRA_GRID_AA)]
+        integrated_spectra_1000 = integrated_spectra_1000[:len(SPECTRA_GRID_AA)]
+
         # #test
         # fig = plt.figure(figsize=(9, 6))
         # plt.gca().set_xscale("log")
@@ -201,7 +375,10 @@ def main():
         # fig.tight_layout()
         # plt.show()
 
-    prob2a()
+   # prob2a()
+   # prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000)
+   # prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
+    prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
 
     exit(0)
 

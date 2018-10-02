@@ -34,6 +34,9 @@ def Fw2Fv(Fw,w): #lambda to nu (wavelength to frequency); c in angstroms/sec
 def Fv2Fw(Fv,v): #
     return Fv*(v**2)/c_const
 
+def getnearpos(array,value):
+    idx = (np.abs(array-value)).argmin()
+    return idx
 
 class Filter:
     def __init__(self,name,file):
@@ -73,8 +76,55 @@ class Filter:
         #some of the first and last are zero, but it is close enough (the next adjacent is always non-zero)
         return self.w[0],self.w[-1]
 
+    def get_F_lambda(self,spectra_grid,spectra,wFw=True):
+        #for now assume on the same grid step (1 AA)
+        if (spectra_grid[-1] < self.w[0]) or (spectra_grid[0] > self.w[-1]):
+            #out of range
+            return 0.0
 
+        dw = 1.0 #AA
 
+        #get specta slice that overlaps the filter
+        #find the indicies in spectra_grid that matches w[0] and w[-1]
+        grid_lo = getnearpos(spectra_grid,self.w[0])
+        grid_hi = getnearpos(spectra_grid,self.w[-1])
+
+        sliced_grid = spectra_grid[grid_lo:grid_hi+1]
+        sliced_spec = spectra[grid_lo:grid_hi+1]
+
+        #put transmission efficiency on the same grid as the spectra
+        tf = np.interp(sliced_grid,self.w,self.Tw)
+
+        if wFw: #spectra passed in already in vFv
+            return np.sum(sliced_spec*tf*dw) / np.sum(sliced_grid*tf*dw)
+        else: #spectra was just Fv, so need to multiply by v
+            return np.sum(sliced_grid*sliced_spec*tf *dw) / np.sum(sliced_grid*tf*dw)
+
+    def get_F_nu(self,spectra_grid,spectra,vFv=True):
+        # for now assume on the same grid step (1 AA)
+        if (spectra_grid[-1] < self.v[0]) or (spectra_grid[0] > self.v[-1]):
+            # out of range
+            return 0.0
+
+        # get specta slice that overlaps the filter
+        # find the indicies in spectra_grid that matches w[0] and w[-1]
+        grid_lo = getnearpos(spectra_grid, self.v[0])
+        grid_hi = getnearpos(spectra_grid, self.v[-1])
+
+        sliced_grid = spectra_grid[grid_hi:grid_lo + 1] #remeber, going from higher frequecny (left) to lower (right)
+        sliced_spec = spectra[grid_hi:grid_lo + 1]
+
+        #has to be in increasing order for interp to work
+        v = np.flip(self.v,axis=0)
+        Tv = np.flip(self.Tv,axis=0)
+
+        # put transmission efficiency on the same grid as the spectra
+        tf = np.interp(sliced_grid, v, Tv)
+
+        if vFv:  # spectra passed in already in vFv
+            return np.sum(sliced_grid * tf) / np.sum(sliced_grid * tf)
+        else:  # spectra was just Fv, so need to multiply by v
+            return np.sum(sliced_grid * sliced_spec * tf) / np.sum(sliced_grid * tf)
 
 class Star:
     def __init__(self,classification,file,distance=7.68):
