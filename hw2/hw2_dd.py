@@ -59,16 +59,27 @@ def read_calzetti():
     return spectra_grid,a_interp
 
 
+def chi_sqr(obs, exp, error=None):
 
-def chisqr(obs, exp, error=None):
+    obs = np.array(obs)
+    exp = np.array(exp)
+
+    if error is not None:
+        error = np.array(error)
+
+    if error is not None:
+        c = np.sum((obs*exp)/(error*error)) / np.sum((exp*exp)/(error*error))
+    else:
+        c = 1.0
+
     chisqr = 0
     if error is None:
         error=np.zeros(len(obs))
         error += 1.0
 
     for i in range(len(obs)):
-        chisqr = chisqr + ((obs[i]-exp[i])**2)/(error[i]**2)
-    return chisqr
+        chisqr = chisqr + ((obs[i]-c*exp[i])**2)/(error[i])
+    return chisqr,c
 
 
 def getnearpos(array,value):
@@ -104,8 +115,12 @@ def prob2a():
     Av_1p0 = sum / (stop-start) #this is R_V*E(B-V) with E(B-V) == 1.0
     Av_0p1 = Av_1p0 * 0.1 #just trying to keep this clear
 
+    #end up scaling by the same factor (0.1) on top and bottom, so Rv is the same
+    #this is CORRECT ... for a given attenuation curve, Rv (over a wavelength range) is essentially constant
+    #as any Change to E(B-V) is a change to A_B and A_V and the attenuation shifts up and down but the slope
+    # does not change
     print("V-band [5000-7000AA]")
-    print("R_V (for E(B-V) = 0.1) ~ %f" %(Av_0p1/0.1)) #change to E(B-V == 0.1)
+    print("R_V (for E(B-V) = 0.1) ~ %f" %(Av_0p1/0.1))
     print("R_V (for E(B-V) = 1.0) ~ %f" %(Av_1p0/1.0))
 
 
@@ -275,8 +290,10 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
             skey = str(age) + "myr_" + str(i)
             flux = {}
             for key in filters:
-                flux[key] = filters[key].get_F_nu(SPECTRA_GRID_Hz, flux_freq[str(age)],False) * 1e29 #cgs to uJy
+                flux[key] = filters[key].get_F_nu(SPECTRA_GRID_Hz, flux_freq[str(age)] * att[i],False)# * 1e29 #cgs to uJy
 
+            flux['age'] = age
+            flux['att'] = i
             solutions[skey] = flux
 
     #now we have (not scaled yet) 9 possible solutions
@@ -292,8 +309,77 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
     #   z  9500.00      53.4224      18.4515
     #   y  10500.0      66.2505      32.0350
 
+    obs = np.array([45.0,52.2668,57.6268,53.4224,66.2505]) #grizy (no v)
+    err = np.array([12.4340,7.22092,15.9229,18.4515,32.0350])
+    wav = np.array([4500.,6580.,8140.,9500.,10500.])
+    frq = hw1.c_const/wav
 
-    #get flux in each filter (grizy) for each of the spectra
+    all_obs = np.array([3.69280,10.4355,45.0,56.4691,52.2668,57.6268,53.4224,66.2505]) #grizy (no v)
+    all_err = np.array([0.510179,3.60430,12.4340,23.4045,7.22092,15.9229,18.4515,32.0350])
+    all_wav = np.array([2300.,3300.,4500.,5270.,6580.,8140.,9500.,10500.])
+    all_frq = hw1.c_const/all_wav
+
+    best_chisqr = 9e99
+    best_sol = None
+
+    # now find best fit
+    for key in solutions:
+        model = [ solutions[key]['g'],
+                  solutions[key]['r'],
+                  solutions[key]['i'],
+                  solutions[key]['z'],
+                  solutions[key]['y'] ]
+
+        #model = [v for v in solutions[key].values()] #in grizy order ... not guaranteed (could use OrderedDict though)
+
+        chi2, scale = chi_sqr(obs, model, err)
+        solutions[key]['chi2'] = chi2
+        solutions[key]['scale'] = scale
+
+        print(key, chi2)
+
+        if chi2 < best_chisqr:
+            best_chisqr = chi2
+            best_sol = key
+
+    print ("*** Best", best_sol,best_chisqr)
+
+    plt.figure()
+    plt.gca().set_xscale("log")
+    plt.gca().set_yscale("log")
+    #plt.xlim(100, 2000)
+    plt.xlim(2000, 100)
+    plt.ylim(1, 200)
+    plt.title(r"SED Best Fit ($\chi^2$)")
+    plt.ylabel(r'$f_{\nu}$ [$\mu Jy$]')
+    plt.xlabel(r'$\nu$ [tera-Hz]')
+    lw = 1.0
+
+    for key in solutions.keys():
+        scale = solutions[key]['scale']
+        sed = flux_freq[str(solutions[key]['age'])]
+        atten = att[solutions[key]['att']]
+
+        plt.plot(SPECTRA_GRID_Hz /1e12, sed * atten * scale, color='k', lw=lw, ls=":", alpha=0.5)
+
+    #overplot the best
+    scale = solutions[best_sol]['scale']
+    sed = flux_freq[str(solutions[best_sol]['age'])]
+    atten = att[solutions[best_sol]['att']]
+
+
+    plt.plot(SPECTRA_GRID_Hz/1e12,sed*atten*scale, color='b', lw=lw, ls="solid")
+
+    plt.errorbar(all_frq/1e12,all_obs,yerr=all_err,color='r',fmt='o')
+
+    plt.show()
+
+
+
+
+
+
+
 
 
 
@@ -375,9 +461,9 @@ def main():
         # fig.tight_layout()
         # plt.show()
 
-   # prob2a()
-   # prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000)
-   # prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
+    #prob2a()
+    #prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000)
+    #prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
     prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
 
     exit(0)
