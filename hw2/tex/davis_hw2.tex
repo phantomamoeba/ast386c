@@ -18,6 +18,7 @@
 \usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
 \usepackage{amsmath}
 \usepackage{relsize}
+\usepackage{color}
 \def\degree{\,^{\circ}}
 
 
@@ -210,25 +211,29 @@
        		    \label{}
           		\end{figure}
 
-  Here, the optimal realization of the model from 3b is subtracted from the (cropped) galaxy image and plotted next to it. Additionally, a histogram of the residuals is made.\\
+  Here, the optimal realization of the model from 3b is subtracted from the (cropped) galaxy image and plotted next to it. Additionally, a histogram of the residuals is made. (Note: as a sanity check, additional inclinations were tried at $60^{\circ}$ and $40^{\circ}$) and both produced substantial bias from 0 in the residuals).\\
   
   You can see that the model is far from perfect, however, the residuals do peak at about zero and falls off fairly sharply on either side. \\
   
   Galaxy features are still clearly visible in the residual map (such as dust lanes in the spiral arms, small bright regions (over densities of stars and/or more rapid star formation, etc)) and that makes sense as the profile created only smoothly varying as a function of radius and does not deal with variations in brightness due to local conditions.\\
   
-  Using simple geometry (small angle approximation), a distance of 9.4 Mpc and a pixel scale of 1:1", I estimate the physical scale length as:\\
+  Using simple geometry (small angle approximation), a distance of 9.4 Mpc and a pixel scale of 1:1 (arcsec:pix), I estimate the physical scale length as:\\
   
-  \hspace{10mm} h[kpc] = $9400 [kpc] \cdot \frac{h["]}{3600} \cdot \frac{\pi}{180}$ \\
+  \hspace{10mm} h[kpc] = $9400 [kpc] \cdot \frac{h["]}{3600} \cdot \frac{\pi}{180^{\circ}}$ \\
   
   This yields h (as $R_{1/2}$) = 11.9 kpc or (as $R_{e}$) = 17.1 kpc.\\
   
   \item Surface Brightness Distance Invariance \\%3d
   
+  \textcolor{red}{todo}
+  
   \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)} L_{\odot} pc^{-2}$
   
   
   
-   \item Surface Brightness Distance Invariance \\%3e
+   \item Analytic Surface Brightness and Luminosity \\%3e
+   
+     \textcolor{red}{todo}
   
   \end{enumerate}
 

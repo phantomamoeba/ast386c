@@ -564,6 +564,7 @@ def prob3c(data,model,image):
     plt.hist(residual.flatten(),bins=100)#,range=[0,1.0]))
     plt.xlabel("Residual Counts")
     plt.ylabel("Number of Pixels")
+    plt.xlim(xmin=-6000,xmax=6000)
     plt.savefig(op.join(OUTDIR, "hw2_prob3c2.png"))
     plt.show()
     plt.close()
