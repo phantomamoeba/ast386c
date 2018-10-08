@@ -213,9 +213,9 @@
 
   Here, the optimal realization of the model from 3b is subtracted from the (cropped) galaxy image and plotted next to it. Additionally, a histogram of the residuals is made. (Note: as a sanity check, additional inclinations were tried at $60^{\circ}$ and $40^{\circ}$) and both produced substantial bias from 0 in the residuals).\\
   
-  You can see that the model is far from perfect, however, the residuals do peak at about zero and falls off fairly sharply on either side. \\
+  You can see that the model is far from perfect, however, the residuals do peak at zero and fall off fairly sharply. \\
   
-  Galaxy features are still clearly visible in the residual map (such as dust lanes in the spiral arms, small bright regions (over densities of stars and/or more rapid star formation, etc)) and that makes sense as the profile created only smoothly varying as a function of radius and does not deal with variations in brightness due to local conditions.\\
+  Galaxy features are still clearly visible in the residual map (such as dust lanes in the spiral arms that are over subtracted, small bright regions (over densities of stars and/or more rapid star formation that are under subtracted, etc)) and that makes sense as the profile created only smoothly varying as a function of radius and does not deal with variations in brightness due to local conditions.\\
   
   Using simple geometry (small angle approximation), a distance of 9.4 Mpc and a pixel scale of 1:1 (arcsec:pix), I estimate the physical scale length as:\\
   
@@ -223,11 +223,33 @@
   
   This yields h (as $R_{1/2}$) = 11.9 kpc or (as $R_{e}$) = 17.1 kpc.\\
   
-  \item Surface Brightness Distance Invariance \\%3d
+  \item Surface Brightness Units Conversion \\%3d
+    
+  \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)} L_{\odot} pc^{-2}$ \\
+
+  First, to covert between magnitudes and luminosity, we use the distance modulus to convert between arcsecs and parsecs (in magnitude space) such that:\\
   
-  \textcolor{red}{todo}
+  \hspace{10mm} $5 log_{10}(180^{\circ}/\pi \cdot 3600"/{}^{\circ} \cdot 1/10pc) \approx 21.572 \approx 21.6$ \\
   
-  \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)} L_{\odot} pc^{-2}$
+  Now we can convert between magnitudes and solar Luminosities as:\\
+
+  \hspace{10mm} $\mu = M_{\odot} + 21.6 - 2.5 log_{10}(\Sigma)$ 
+  
+  \hspace{10mm} where:
+  
+  \hspace{20mm} $M_{\odot}$ is the absolute bolometric AB magnitude of the Sun = 4.8
+  
+  \hspace{20mm} $\mu$ is in units of $magnitudes/arcsec^2$
+  
+  \hspace{20mm} $\Sigma$ is in units of $L_{\odot}/pc^2$ \\
+  
+  This becomes then:\\
+  
+  \hspace{10mm} $\mu = 26.4 - 2.5 log_{10}(\Sigma)$ \\
+  
+  And, solving for $\Sigma$:\\
+  
+  \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)}$ \\
   
   
   
