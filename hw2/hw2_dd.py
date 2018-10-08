@@ -7,6 +7,9 @@ import sys
 sys.path.append('../hw1/')
 import hw1_dd as hw1
 
+# sys.path.append('../../elixer/')
+# import science_image as si
+
 
 import numpy as np
 from scipy.integrate import quad
@@ -18,6 +21,10 @@ import matplotlib.lines as mlines
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import astropy.table
+
+import astropy.io.fits as fits
+import astropy.modeling.functional_models as models
+#import astropysics.models.SersicModel as sersic
 
 
 ###############################
@@ -37,6 +44,10 @@ MAX_WAVE = 1e6 #AA
 ##################################
 #Support Functions
 ##################################
+
+
+def dist(x1,y1,x2,y2):
+    return np.sqrt((x1-x2)**2 + (y1-y2)**2)
 
 def read_calzetti():
     #return the interpolated wavelength array and A_lambda array
@@ -64,6 +75,8 @@ def chi_sqr(obs, exp, error=None):
     obs = np.array(obs)
     exp = np.array(exp)
 
+    x = len(obs)
+
     if error is not None:
         error = np.array(error)
 
@@ -74,11 +87,36 @@ def chi_sqr(obs, exp, error=None):
 
     chisqr = 0
     if error is None:
-        error=np.zeros(len(obs))
+        error=np.zeros(np.shape(obs))
         error += 1.0
 
-    for i in range(len(obs)):
-        chisqr = chisqr + ((obs[i]-c*exp[i])**2)/(error[i])
+    for i in range(x):
+            chisqr = chisqr + ((obs[i]-c*exp[i])**2)/(error[i]**2)
+    return chisqr,c
+
+def chi_sqr2D(obs, exp, error=None):
+
+    obs = np.array(obs)
+    exp = np.array(exp)
+
+    x,y = np.shape(obs)
+
+    if error is not None:
+        error = np.array(error)
+
+    if error is not None:
+        c = np.sum((obs*exp)/(error*error)) / np.sum((exp*exp)/(error*error))
+    else:
+        c = 1.0
+
+    chisqr = 0
+    if error is None:
+        error=np.zeros(np.shape(obs))
+        error += 1.0
+
+    for i in range(x):
+        for j in range(y):
+            chisqr = chisqr + ((obs[i][j]-c*exp[i][j])**2)/(error[i][j]**2)
     return chisqr,c
 
 
@@ -321,6 +359,7 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
 
     best_chisqr = 9e99
     best_sol = None
+    best_scale = None
 
     # now find best fit
     for key in solutions:
@@ -341,18 +380,21 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
         if chi2 < best_chisqr:
             best_chisqr = chi2
             best_sol = key
+            best_scale = scale
 
     print ("*** Best", best_sol,best_chisqr)
 
     plt.figure()
     plt.gca().set_xscale("log")
     plt.gca().set_yscale("log")
-    #plt.xlim(100, 2000)
-    plt.xlim(2000, 100)
+
+#    plt.xlim(2000, 100)
+    plt.xlim(1000,20000)
     plt.ylim(1, 200)
     plt.title(r"SED Best Fit ($\chi^2$)")
     plt.ylabel(r'$f_{\nu}$ [$\mu Jy$]')
-    plt.xlabel(r'$\nu$ [tera-Hz]')
+    #plt.xlabel(r'$\nu$ [tera-Hz]')
+    plt.xlabel(r'$\lambda$ [$\AA$]')
     lw = 1.0
 
     for key in solutions.keys():
@@ -360,7 +402,8 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
         sed = flux_freq[str(solutions[key]['age'])]
         atten = att[solutions[key]['att']]
 
-        plt.plot(SPECTRA_GRID_Hz /1e12, sed * atten * scale, color='k', lw=lw, ls=":", alpha=0.5)
+        #plt.plot(SPECTRA_GRID_Hz /1e12, sed * atten * scale, color='k', lw=lw, ls=":", alpha=0.5)
+        plt.plot(SPECTRA_GRID_AA, np.flip(sed * atten * scale,axis=0), color='k', lw=lw, ls=":", alpha=0.5)
 
     #overplot the best
     scale = solutions[best_sol]['scale']
@@ -368,15 +411,162 @@ def prob2d(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000):
     atten = att[solutions[best_sol]['att']]
 
 
-    plt.plot(SPECTRA_GRID_Hz/1e12,sed*atten*scale, color='b', lw=lw, ls="solid")
+  # plt.plot(SPECTRA_GRID_Hz/1e12,sed*atten*scale, color='b', lw=lw, ls="solid")
+    plt.plot(SPECTRA_GRID_AA, np.flip(sed * atten * scale,axis=0), color='b', lw=lw, ls="solid")
 
-    plt.errorbar(all_frq/1e12,all_obs,yerr=all_err,color='r',fmt='o')
+    #plt.errorbar(all_frq/1e12,all_obs,yerr=all_err,color='r',fmt='o')
+    plt.errorbar(all_wav, all_obs, yerr=all_err, color='r', fmt='o')
 
+    plt.savefig(op.join(OUTDIR,"hw2_prob2d.png"))
+    #plt.show()
+    plt.close()
+
+
+
+def prob3a(x1,y1,x2,y2):
+    #todo: code it up here rather than just use calculator
+    #todo: see if there is a python extension that tracks errors rather than use definition |dQ| ...
+    pass
+
+
+
+def prob3b():
+    #image is already cropped, so no need for a true cutout (just use the whole data payload)
+    data = fits.getdata("../res/ngc5055.fits")
+    pa = 100.0 #position angle
+    max_count_core = 23755
+    #ellipticity = (425.8-202.6)/425.8  #roughly 61 deg
+
+    ellipticity = (425.44 - 279.89) / 425.44 #roughly 49 deg
+
+
+    h_init = int(dist(450.,450.,295.,410.)) #using contours on ds9 image, approx location of center counts to 1/e
+    #this is the center (450,450) to one edge(295,410)
+    best_h = 259.63#308.92 #309. #half-light radius ... r_1/2 for r_e = r_1/2 / ln(2) ~~ 445.68 pixels
+
+    x,y = np.meshgrid(np.arange(data.shape[1]), np.arange(data.shape[0])) #in ds9, y is 1st index, x is second
+
+
+    #minimize the residual to fit h?
+
+    #
+    # d = data[288:594,168:640]
+    # max_count_core = np.max(d)
+    # best_h = h_init
+    # best_chi2 = 9e99
+    # for h in range(h_init+90,h_init+120):
+    #     model = models.Sersic2D(amplitude=1, r_eff=h,n=1.0,
+    #                             x_0=len(x)/2.,y_0=len(y)/2.,
+    #                             ellip=ellipticity,theta=(pa-90.)*np.pi/180.)
+    #     img = model(x, y)[288:594,168:640]
+    #     img *= max_count_core/np.max(img)
+    #
+    #     chi2, scale = chi_sqr2D(d, img, None)
+    #     print (chi2,h)
+    #
+    #     if chi2 < best_chi2:
+    #         best_chi2 = chi2
+    #         best_h = h
+    #
+    # print("Best",best_chi2,best_h)
+
+    #amplitude = surface brightness at r_eff not at center, but still okay, since scaling up afterward so the core
+    # counts match
+
+    #refine from 309
+    # h_init = 309.
+    # h_init = 260.
+    # d = data[288:594,168:640]
+    # max_count_core = np.max(d)
+    # best_h = h_init
+    # best_chi2 = 9e99
+    # for deci in range(-100,101):
+    #     h = float(h_init)+float(deci)/100.
+    #     model = models.Sersic2D(amplitude=1, r_eff=h,n=1.0,
+    #                             x_0=len(x)/2.,y_0=len(y)/2.,
+    #                             ellip=ellipticity,theta=(pa-90.)*np.pi/180.)
+    #     img = model(x, y)[288:594,168:640]
+    #     img *= max_count_core/np.max(img)
+    #
+    #     chi2, scale = chi_sqr2D(d, img, None)
+    #     print (chi2,h)
+    #
+    #     if chi2 < best_chi2:
+    #         best_chi2 = chi2
+    #         best_h = h
+    #
+    # print("Best",best_chi2,best_h)
+
+    #best_h = 259.63
+
+
+    model = models.Sersic2D(amplitude=1, r_eff=best_h, n=1.0,
+                            x_0=len(x) / 2., y_0=len(y) / 2.,
+                            ellip=ellipticity, theta=(pa - 90.) * np.pi / 180.)
+    img = model(x, y)  # .swapaxes(0,1)
+    img *= max_count_core / np.max(img)
+
+    plt.figure(figsize=(13, 4)) # 2 cols, 1row
+
+    plt.subplot(121) #image
+    plt.title("NGC 5055")
+    plt.imshow(data, origin="lower",cmap="gray")
+    cbar = plt.colorbar()
+    cbar.set_label('Counts')
+    plt.xlabel("pix")
+    plt.ylabel("pix")
+
+
+    plt.subplot(122) #model
+    plt.title(r"$\Sigma (r)$ model")
+    plt.imshow(img, origin="lower", cmap="gray")
+    plt.xlabel("pix")
+    plt.ylabel("pix")
+
+    cbar = plt.colorbar()
+    cbar.set_label('Counts')
+
+    plt.savefig(op.join(OUTDIR,"hw2_prob3b.png"))
     plt.show()
+    return data, model, img
 
 
+def prob3c(data,model,image):
+
+    residual = data - image
+
+    plt.figure(figsize=(16, 4))  # 2 cols, 1row
+
+    plt.subplot(121)
+    plt.title("Original Image (cropped)")
+    plt.imshow(data, origin="lower", cmap="gray")
+
+    cbar = plt.colorbar()
+    cbar.set_label('Counts')
 
 
+    plt.subplot(122)
+    plt.title("Residual Image (cropped)")
+    plt.imshow(residual, origin="lower", cmap="gray")
+
+    cbar = plt.colorbar()
+    cbar.set_label('Counts')
+
+
+    plt.savefig(op.join(OUTDIR, "hw2_prob3c1.png"))
+    plt.show()
+    plt.close()
+
+
+    plt.figure()
+    plt.title("Residual Image (histogram)")
+    #plt.gca().yaxis.set_label_position("right")
+    plt.hist(residual.flatten(),bins=100)#,range=[0,1.0]))
+    plt.xlabel("Residual Counts")
+    plt.ylabel("Number of Pixels")
+    plt.savefig(op.join(OUTDIR, "hw2_prob3c2.png"))
+    plt.show()
+    plt.close()
 
 
 
@@ -464,7 +654,10 @@ def main():
     #prob2a()
     #prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000)
     #prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
-    prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
+    #prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
+
+    data, model, image = prob3b()
+    prob3c(data[288:594,168:640],model,image[288:594,168:640])
 
     exit(0)
 
