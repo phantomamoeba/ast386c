@@ -1,0 +1,238 @@
+\documentclass[11pt]{article}
+% \usepackage{phase1}
+\usepackage{graphics,graphicx}
+%\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{wrapfig}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{siunitx}
+\usepackage[labelfont=bf]{caption}
+%\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{float}
+\def\Vhrulefill{\leavevmode\leaders\hrule height 0.7ex depth \dimexpr0.4pt-0.7ex\hfill\kern0pt}
+\graphicspath{ {/home/dustin/code/python/ast386c_galaxies/hw2/out/} }
+\usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
+\usepackage{amsmath}
+\usepackage{relsize}
+\def\degree{\,^{\circ}}
+
+
+%opening
+\title{AST 386C Homework \#2}
+\author{Dustin Davis, eid:polonius}
+\date{October 16, 2018}
+
+\begin{document}
+\maketitle
+
+%\begin{center}
+%\textbf{\large AST 386 Homework \#1}
+%\vspace{2mm}
+%{\sc Dustin Davis}
+%\end{center}
+%\vspace{4mm}
+
+
+\newpage 
+
+
+
+\begin{enumerate}
+%PROBLEM 1
+\item 
+	Download and import data\\
+
+	Note: all data manipulations are in python. Source code available if requested.\\
+
+\item  %PROBLEM 2a
+	
+	\begin{enumerate}
+	%%2(a)   
+    \item Plot of Calzetti attenuation\\
+    
+   		\begin{figure}[H]
+		    \includegraphics[width=\linewidth]{hw2_prob2a.png}
+		    \caption{}
+		    \label{}
+   		\end{figure}
+    
+	    Here, I read in the "calzetti01.txt" file, and insert two data points to fill out the wavelength range (a point at $\lambda$ = 90$\AA$ with $A_V(\lambda)$ = 90.5 from a linear extrapolation on the blue end, and a point at $\lambda$ = 28500 $\AA$ with $A_V(\lambda)$ = 0 from Battisti, Calzetti, Chary [2017]). I then interpolated onto a 1$\AA$ grid, and, using the definitions below, I compute and plot ($f_{obs}/f_{int}$) for the two E(B-V) values:
+    	\\
+    	
+    	\hspace{10mm} $A_{\lambda} = m_{obs} - m_{int} = -2.5log_{10}(\frac{\displaystyle f_{obs}}{\displaystyle f_{int}})$ \hspace{5mm} or \hspace{5mm} $f_{obs}/f_{int} = 10^{(-0.4 \cdot A_{\lambda} \cdot E(B-V))}$ \\
+    	
+		\hspace{10mm}	$A_{\lambda} = E(B-V) \cdot R_{\lambda}$ \hspace{5mm} or \hspace{5mm} $R_V = \frac{\displaystyle A_V}{\displaystyle E(B-V)}$\\	
+    	
+    	% % % % % % % % % % % % % % % % % % %
+    	% %todo: I think R_V is essentially constant as a function of grain geometry and column density ... if E(B-V) changes, so should A_V (and in the same direction). So, it seems that R_V should be relatively constant, regardless of E(B-V)... that is, the slope of the extinction curve should be constant, though the whole curve can move up/down as E(B-V) (or A_B and A_V) change.
+		% % % % % % % % % % % % % % % % % % %
+
+		Using the Calzetti data with V-Band $\approx$ 5000 - 7000 $\AA$, I average over the those wavelengths, I get $R_V$ $\approx$ 3.7 for both $E(B-V)$ values (given how the data is defined; we are really presented with only $A_{V}(\lambda)$ as $R_{V}(\lambda) \cdot E(B-V)$ for a particular normalization of $E(B-V)=1.0$ and do not know how $A_V$ varies with $E(B-V)$ (that is, we are not given anything that maps to $A_B$) so I cannot recompute explicitly). However, over a fixed wavelength range, for any given attenuation curve, I expect $R_V$ to be essentially constant with changes in $E(B-V)$ as changes to $A_V$ should scale with changes to $A_B$. The $R_V$ $\approx$ 3.7 value is in the expected range (2-5) and is fairly close to the canonical Milky Way value of 3.1, so that seems reasonable.
+
+	%%2(b)       
+    \item Attenuation Applied to Aged Spectra\\
+    
+       		\begin{figure}[H]
+    		    \includegraphics[width=\linewidth]{hw2_prob2b.png}
+    		    \caption{}
+    		    \label{}
+       		\end{figure}
+	       		
+	       		
+	 Here, I apply the attenuation factors from (2a) to the (total) integrated spectra from HW\#1 resulting in 9 curves: 3 ages $\times$ 3 attenuations, (0 yr, 500 Myr, 1 Gyr) $\times$ (none, $E(B-V)=0.1$, $E(B-V)=1.0$). To multiply with the attenuation data, the integrated spectra were truncated and aligned on the same wavelength grid.
+    
+    
+    %%2(c)   
+    \item g - r color for each spectra\\
+    
+
+    	\begin{tabular}{c|c|c}
+    	Age & E(B-V) & g$-$r color \\
+    	  \hline
+    	  0 Myr &  0.0 & -0.46 \\
+    		   &  0.1 & -0.36 \\
+    		   &  1.0 & 0.75 \\
+    	  \hline
+    	  500 Myr & 0.0 & -0.14 \\
+    			  & 0.1 & -0.02 \\
+    			  & 1.0 & 1.07 \\
+    	  \hline
+    	  1000 Myr &  0.0 & 0.18 \\
+    	  		&  0.1 & 0.31 \\
+    	  	    &  1.0 & 1.37 \\
+    	  \hline
+    	\end{tabular}
+    
+    Here, I convert the $\nu L_{\nu}$ form (same as $\lambda L_{\lambda}$) of the spectra from HW\#1 into a form proportional to $f_{\nu}$ as  $f_{\nu} \propto \lambda L_{lambda} \cdot \frac{\lambda}{c}$ (notice the single $\lambda$ in the fraction since there is already a $\lambda$ term in $\lambda L_{\lambda}$). I then calculate the flux under each of the request filters as:\\
+
+	 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\ 
+	 	
+	 using discrete array arithmetic in place of integrals, and being careful to keep the direction of the arrays correct (e.g. when converting between increasing wavelength and increasing frequency). Finally, the color (magnitude) is calculated from the ratio of the fluxes as: \\
+	 
+	\hspace{10mm} $ m_{g-r} = -2.5 log_{10}(\dfrac{f_g}{f_r})$\\
+	
+	Both aging and dust attenuation push the color toward the red (in aging, through the loss of the more massive, blue stars and in dust attenuation through the preferential reduction of bluer frequencies). There does not seem to be a good way to disentangle aging affects from dust attenuation, at least not with only the color from these two filters. With additional filters, we could probe the longer wavelength spectra where we start to see bigger differences between the two effects. An older population with little dust would not show the same bump in the infra-red as a younger, heavily obscured population. Basically, for an older population, the bluer energy is simply gone (no hot stars to produce it), but in a younger, dust obscured population the bluer energy is re-radiated (by the heated dust) in the infra-red.
+    
+
+	%%2(d)    
+    \item SED Fitting\\
+    
+  		\begin{figure}[H]
+		    \includegraphics[width=\linewidth]{hw2_prob2d.png}
+		    \caption{}
+		    \label{}
+   		\end{figure}
+   		
+   		
+   	The best fit (lowest $\chi^2$) is the 1 Gyr with zero attenuation ($\chi^2=0.15$) followed closely by the 1 Gyr with $E(B-V) = 0.1$ ($\chi^2=0.77$) and 500 Myr with $E(B-V)=0.1$ ($\chi^2=0.93$). The other possible solutions have much higher $\chi^2$ values.\\
+   	
+   	Here, I kept the 9 spectra from earlier in frequency space and in $f_{\nu}$ units and computed the flux under each of the 5 (grizy) filters from HW\#1 using the same procedure as before.
+   	
+  		\hspace{10mm} $<F_{filter,\nu}> = \frac{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
+   			 	
+   	I then perform $\chi^2$ fits of each of those 9 spectra against the 5 matching filters in the galaxy\_photo.txt dataset, incorporating the uncertainties. The $\chi^2$ is allowed to scale to find the optimal constant and scale factor (as below), then the 9 fits are compared using their own best scaling and with the lowest $\chi^2$ corresponding to the "best" fit.\\
+   	
+   		\hspace{10mm} $\chi ^2 = \sum \frac{\displaystyle (data_i - c \cdot model_i)^2}{\displaystyle data\ error_i^2}$
+   		\\
+   		
+   		\hspace{10mm} where c is a scaling factor determined by: \\
+   		
+   		\hspace{10mm} $c = \frac{\displaystyle \sum (data_i \cdot model_i)/(data\ error_i)^2}{\displaystyle \sum (model_i)^2/(data\ error_i)^2}$\\
+ 
+    
+    \end{enumerate}
+    
+    
+  \item
+  
+  \begin{enumerate} % 3a
+  \item Estimate inclination of NGC5055 from FITS image.\\ 
+  
+  My estimation of the inclination is $49^{\circ} \pm 1^{\circ}$ (nominal best case error ... depends on a hand-wavy estimate of my ability to locate the end points of the major and minor axes) \\
+  
+  
+  The procedure I used was to zscale the image and add contour lines and find the major and minor axes' lengths by the simple Cartesian distance formula connecting pairs of points on opposite ends of the galaxy's disk such that the lines pass through the disk center at right angles. The contours were used to find similar flux counts on opposite ends of the disk. The basic assumptions were that the disk is essentially circular (so if the inclination were face on, the two axis would be of equal length) and that the brightness is a uniform function of the radius. I use the nearest whole pixel value and perform the calculation in pixel space, so there is an inherent error of $\pm 1$ pixel on each of the 8 coordinates measured (2 coordinates for each of the 4 points) plus an unknown uncertainty in judgment as to where to place the line segment endpoints. I assume an error in placement of $\pm 5$ pixels (rolling the pixel rounding error in to that number).\\
+  
+  The inclination then, is $cos^{-1}(minor\ axis/major\ axis)$ (note: $cos^{-1}$ since I want equal lengths (or $\cos^{-1}(1)$) to give an inclination of $0^{\circ}$ )\\
+  
+  Selected points (pixel space): (363,560), (541,344), (231,369), (621,539)
+  
+  Minor axis length = 279.9 $\pm 5\sqrt{2}$
+  
+  Major axis length = 425.4 $\pm 5\sqrt{2}$\\
+  
+  Error propagation via:  $\lvert \delta Q \rvert\ =\ \lvert \frac{\displaystyle dq}{\displaystyle dx} \rvert \delta x$ \\ 
+  
+  
+  \item Surface Brightness %3b
+  
+    		\begin{figure}[H]
+  		    \includegraphics[width=\linewidth]{hw2_prob3b.png}
+  		    \caption{}
+  		    \label{}
+     		\end{figure}
+     		
+   Here I use the measurement from (3a) to create a surface brightness profile model in 2D (technically using a Sersic model for future flexibility, but with the Sersic index set to 1.0).\\
+   
+   \hspace{10mm} $\Sigma (r)\ =\ \Sigma _{cent}$ exp(-r/h)
+   
+   -or-
+   
+   \hspace{10mm} $\Sigma (r)\ =\ \Sigma _{cent}$ exp[$-b_n \cdot (\frac{\displaystyle  r}{\displaystyle  h})^{(1/n)}-1$] where n = 1 \\
+  
+   The model image is inclined per the value in (3a) and rotated counter-clockwise by the position angle ($10^{\circ}$ since the reference axis is itself rotated by $90^{\circ}$ counter-clockwise).\\
+   
+   The value of $\Sigma _{cent}$ is set such that a realization of the model scales to match the center (brightest pixel) of the galaxy.\\
+   
+   The value of h is set initially as a guess and is then optimized (to 2 decimal places) by minimizing a 2D $\chi^2$ as a loss function (see problem 2D, but with a second dimension added to the function) on a grid against the original image cropped to roughly contain only the galaxy (numpy array sliced to [288:594,168:640]). \\
+   
+   The optimal h is found to be 259.63 pixels as a half-light radius (or 374.57 pixels as 1/e radius, noting that $R_{1/2}\ = R_e \cdot ln(2)$)\\
+   
+   \item Surface Brightness Residuals\\ %3c
+   
+   Note that most of (3c) was actually executed as part of (3b)
+   
+       		\begin{figure}[H]
+     		    \includegraphics[width=\linewidth]{hw2_prob3c1.png}
+     		    \caption{}
+     		    \label{}
+        		\end{figure}
+  
+
+         		\begin{figure}[H]
+         		\centering
+       		    \includegraphics[scale=0.5]{hw2_prob3c2.png}
+       		    \caption{}
+       		    \label{}
+          		\end{figure}
+
+  Here, the optimal realization of the model from 3b is subtracted from the (cropped) galaxy image and plotted next to it. Additionally, a histogram of the residuals is made.\\
+  
+  You can see that the model is far from perfect, however, the residuals do peak at about zero and falls off fairly sharply on either side. \\
+  
+  Galaxy features are still clearly visible in the residual map (such as dust lanes in the spiral arms, small bright regions (over densities of stars and/or more rapid star formation, etc)) and that makes sense as the profile created only smoothly varying as a function of radius and does not deal with variations in brightness due to local conditions.\\
+  
+  Using simple geometry (small angle approximation), a distance of 9.4 Mpc and a pixel scale of 1:1", I estimate the physical scale length as:\\
+  
+  \hspace{10mm} h[kpc] = $9400 [kpc] \cdot \frac{h["]}{3600} \cdot \frac{\pi}{180}$ \\
+  
+  This yields h (as $R_{1/2}$) = 11.9 kpc or (as $R_{e}$) = 17.1 kpc.\\
+  
+  \item Surface Brightness Distance Invariance \\%3d
+  
+  \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)} L_{\odot} pc^{-2}$
+  
+  
+  
+   \item Surface Brightness Distance Invariance \\%3e
+  
+  \end{enumerate}
+
+\end{enumerate}
+
+
+\end{document}

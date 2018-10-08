@@ -1,0 +1,306 @@
+\documentclass[11pt]{article}
+% \usepackage{phase1}
+\usepackage{graphics,graphicx}
+%\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{wrapfig}
+\usepackage{epsfig}
+\usepackage{amssymb}
+\usepackage{wrapfig}
+\usepackage{setspace}
+\usepackage{siunitx}
+\usepackage[labelfont=bf]{caption}
+%\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{float}
+\def\Vhrulefill{\leavevmode\leaders\hrule height 0.7ex depth \dimexpr0.4pt-0.7ex\hfill\kern0pt}
+\graphicspath{ {/home/dustin/code/python/ast386c_galaxies/hw1/out/} }
+\usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
+\usepackage{amsmath}
+\usepackage{relsize}
+\def\degree{\,^{\circ}}
+
+%opening
+\title{AST 386C Homework \#1}
+\author{Dustin Davis, eid:polonius}
+\date{September 25, 2018}
+
+\begin{document}
+\maketitle
+
+%\begin{center}
+%\textbf{\large AST 386 Homework \#1}
+%\vspace{2mm}
+%{\sc Dustin Davis}
+%\end{center}
+%\vspace{4mm}
+
+
+\newpage 
+
+
+
+\begin{enumerate}
+%PROBLEM 1
+\item 
+	Download and import data\\
+
+	Note: all data manipulations are in python. Source code available if requested.\\
+
+\item  %PROBLEM 2a
+	Converting between flux, flux density, luminosity and magnitudes.\\
+	
+	For sanity and easy of use, the spectrum data converted also to $S_{\lambda}$ with frequency indexing so both $S_{\lambda}$ and $S_{\nu}$ can be indexed by either frequency or wavelength. Conversion are made with: \\
+
+	\hspace{10mm} $c = \lambda \cdot \nu$ \hspace{5mm} and \hspace{5mm}  $F_{\lambda}\cdot d\lambda\ =\ F_{\nu}\cdot d\nu$
+	
+	
+	\begin{enumerate}
+    \item Plot of A0V spectrum, filters, and flat-spectrum\\
+    
+    Plotting in $S_{\nu}$ vs $\lambda$ as is the convention with all flux values scaled up by a factor of 2x10$^{19}$ to bring it into the same numeric range as the transmission efficiency. Only the interesting bits of the spectra (nearest the overlap with the filters) are plotted.
+    
+    \begin{figure}[H]
+         	     \includegraphics[width=\linewidth]{hw1_p2a.png}
+         	     %\caption{}
+         	     \label{fig:fig1}
+     \end{figure}
+     
+\newpage 
+ 
+	 \item %PROBLEM 2b
+	 Vega AB apparent magnitudes (absolute magnitudes in parenthesis).\\
+	 
+	 \hspace{10mm}$m_{g}\ (M_{g}) = -0.099\ (0.474)$
+	 
+	 \hspace{10mm}$m_{r}\ (M_{r}) = 0.158\ (0.731)$
+	 	  
+	 \hspace{10mm}$m_{i}\ (M_{i}) =  0.399\ (0.972)$
+	 
+	 \hspace{10mm}$m_{z}\ (M_{z}) = 0.542\ (1.115)$
+	 
+	 \hspace{10mm}$m_{y}\ (M_{y}) = 0.622\ (1.195)$\\
+	 	 
+	 Using a modified (sums instead of integrals) version of the equation:
+		 
+		 	\hspace{10mm} $<F_{filter,\nu}> = \frac{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot F(\nu) \cdot T(\nu)\ d\nu}{\displaystyle \mathlarger{\int} \frac{1}{\nu} \cdot T(\nu)\ d\nu}$ \\
+		 	
+		 	where:
+		 	
+		 	 \hspace {10mm}$F(\nu)$ is the flux density as a function of frequency 
+		 	 
+		 	 \hspace{10mm} $T(\nu)$ is the total system response (throughput)\\
+		 	 
+ 	 
+		Instead of integrals, however, given the discrete data, simple summations were used with each $d\nu$ replaced with the step width (in frequency space) to the next data point (note: that the last (red-most) step is truncated for simplicity but given the number of data points, the falling throughput fraction, and the precision of the magnitude reported, the contribution of the last data bin is negligible). Also, notice no uncertainties are reported in the data, so no uncertainties are propagated here.\\
+		
+		The magnitude in each filter is calculated using the range over which the filter throughput is non-zero and the equations:\\
+			
+			 \hspace{10mm} $m_{<filter>} = -2.5 log_{10}(\frac{\displaystyle f_{\nu}}{3631 Jy})$\\
+			 
+			 \hspace{10mm} $M_{<filter>} = m_{<filter>} + 5 -5 \cdot log_{10}(d_{pc})$\\
+		 	 
+	   
+	 \item %PROBLEM 2c
+	 What do you notice about the values and the shape of the spectrum of Vega?\\	 
+	 
+	 Since Vega is a real star, its spectrum is not flat and there are obvious spectral features. In the optical (g-band) it is generally brighter than the reference 3631Jy and fainter in all other provided bands (r,i,z,y), declining toward the red. Spectral feature aside, it is roughly a black body (more obvious in the second plot of (2d)).\\
+
+\newpage 
+	 
+	 \item %PROBLEM 2d
+	 Plot of A0V in $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$ ...
+	 
+	 \begin{figure}[H]
+		 \includegraphics[width=\linewidth]{hw1_p2d.png}
+	     %\caption{}
+	     \label{fig:fig2}
+	  \end{figure}
+	  
+	
+	The over-plotting shows clearly that $\nu$$L_{\nu}$ and $\lambda$$L_{\lambda}$ are equivalent (which makes sense even dimensionally, removing the per frequency and per wavelength dependencies). You can also easily read off the peak luminosity around 4000$\AA$ at $\sim$ 64$L_{\odot}$.\\
+	
+	Also, note, for other purposes it is generally more convenient to plot in units of the solar luminosity rather than cgs or other units. Below is the same data plotted as such (on the same wavelength scale.)\\
+	
+	\begin{figure}[H]
+		\includegraphics[width=\linewidth]{hw1_p2d-2.png}
+		%\caption{}
+		\label{fig:fig3}
+	\end{figure}
+	  
+  \end{enumerate}
+  
+\newpage 
+  
+  \item %PROBLEM 3
+  Stellar Population Synthesis (SPS)\\
+  
+  \begin{enumerate}
+	  \item %PROBLEM 3a
+	  
+	  
+	  Salpeter IMF\\
+	  
+	 The expectation value of mass from the Salpeter IMF is $\approx 0.28 M_{\odot}$\\
+	  
+	  \begin{figure}[H]
+	  		\includegraphics[width=\linewidth]{hw1_p3a.png}
+	  		%\caption{}
+	  		\label{fig:fig4}
+	  \end{figure}
+  
+  		
+  		To keep things simple, I coded the Salpeter IMF (Initial Mass Function) into an MDF (Mass Distribution (or Denisty) Function) rather than a PDF (Probability Density Function) (that is, as a discrete distribution rather than a continuous one, using fixed width mass bins of 0.01 $M_{\odot}$ between $0.08 M_{\odot}$ and $100 M_{\odot}$). For readability though, representative equations (below) are shown in continuous form. \\
+  		
+  		  		$n(m1,m2) = \mathlarger{\int_{m1}^{m1+0.01}} \xi(m)dm $, \hspace{5mm}  where  $\xi(m) = m^{-2.35}$ \\
+  		  		
+  		The MDF is then normalized to 1.0 (i.e. each number density bin is divided by the total number of stars in the set ... that is, divided by the result below:)\\
+  		
+  		$normalization = \mathlarger{\int_{0.08}^{100}} \xi(m)dm $ = $\frac{\displaystyle -1}{ \displaystyle 1.35 \cdot ln(10)} \cdot (100^{-1.35}-0.08^{-1.35}) \approx 9.73$\\
+  		
+  		
+  		The expectation value of mass is then (in this implementation) a discrete sum of all the weighted probabilities times the mass of the corresponding bin. \\
+  		
+  		$<m> = \mathlarger{\int_{0.08}^{100}} m\cdot n(m)dm $ \\
+  		
+  		
+  		The CDF (Cumulative Density Function) is also implemented discretely, rather than continuously, as the sum of all probability bins for masses greater than the current mass.\\
+  		
+ 	\item %PROBLEM 3B
+ 	
+	 	Maximum mass of stars expected to still be found on the Main Sequence:\\
+		  
+		   \hspace{10mm}100 Myr $\approx 5.36 M_{\odot}$ 
+		   
+		   \hspace{10mm}500 Myr $\approx 2.82 M_{\odot}$ 
+		   
+		   \hspace{10mm}~~  1 Gyr $\approx 2.14 M_{\odot}$\\
+		  		  
+		  
+		  This solution uses the relation: $\frac{\displaystyle T_*}{\displaystyle T_{\odot}} = \frac{\displaystyle M_*}{\displaystyle M_{\odot}}\frac{\displaystyle L_{\odot}}{\displaystyle L_*}$, where $T_{\odot} = 10Gyr$
+		  
+		   rearranging to solve for:  \\
+		  
+		  \hspace{10mm} $M_* = M_{\odot} \cdot  \frac{\displaystyle T_{\odot}}{\displaystyle T_*} \cdot \frac{\displaystyle L_*}{\displaystyle L_{\odot}}$\\
+		  
+		then substituting in the appropriate $\frac{\displaystyle L_*}{\displaystyle L_{\odot}}$ from the problem description and verifying the solution is valid (that the mass is in the appropriate range ... if it is not, try the next substitution).\\
+		  
+		  
+  	\item Impact of aging stellar populations on prior question:\\
+  	
+	  	Age 500 Myr: Changes the upper mass limit to $\approx 2.82 M_{\odot}$ and  results in a new expectation mass of $\approx 0.22 M_{\odot}$\\
+	  	
+	  	Age 1 Gyr: Changes the upper mass limit to $\approx 2.14 M_{\odot}$ and  results in a new expectation mass of $\approx 0.21 M_{\odot}$\\
+	  	
+		Here, I ignore any on-going star formation, and since the highest mass stars have aged off the Main Sequence, they are no longer included in the calculation, and the expectation mass is lower. In short, the upper limit of the MDF is truncated to the maximum predicted mass still living on the Main Sequence and the expectation mass is recomputed as before.\\
+\newpage 
+		
+	\item Fractional contribution for stars of given mass ranges to the total light emitted:\\
+	
+		  \begin{figure}[H]
+		  		\includegraphics[width=\linewidth]{hw1_p3d.png}
+		  		%\caption{}
+		  		\label{fig:fig5}
+		  \end{figure}
+	
+	The curve gray highlighted curve is produced via a direct, cumulative summing of the bins from the previous problem(s) (3a), where the colored, over-plotted curves come from the analytical piece-wise integration of the four equations given in (3b) with each higher mass range added to that of the lower mass range. There is a small discontinuity (kink) between each of the mass ranges as the slope is different on the left and right, though it is very difficult to see at the resolution of this plot.\\
+	
+	As can be readily seen, while the low mass stars dominate the number counts, the relatively few high mass stars dominate in their light contribution.\\
+	
+\newpage 
+	
+	\item Impact of aging the stellar population on the previous question:\\
+	
+		  \begin{figure}[H]
+  		  		\includegraphics[width=\linewidth]{hw1_p3e.png}
+  		  		%\caption{}
+  		  		\label{fig:fig6}
+		  \end{figure}
+ 	
+ 	These three curves are produced by repeating the calls from (3d) but restricting the upper integration limit to the mass of the largest stars still expected to be on the Main Sequence (as determined from (3c)). \\
+ 	
+ 	The highest mass remaining stars still dominate the light, and their relative fraction of the total light is increasing as the populations ages (that is, as the higher mass stars age off the MS and die, the total light decreases, so the remaining lower mass stars, now the highest mass still around, while contributing the same light as before, now comprise a larger fraction of what remains.)
+ 	
+  \end{enumerate}
+  
+  
+\newpage 
+  
+  \item %PROBLEM 4
+    Stellar Population Models\\
+    
+    \begin{enumerate}
+  	  \item %PROBLEM 4a
+  	  Temperature and Luminosity by Stellar Mass:
+  	  
+		  \begin{figure}[H]
+	  		\includegraphics[width=\linewidth]{hw1_p4a.png}
+	  		%\caption{}
+	  		\label{fig:fig7}
+		  \end{figure}
+		  
+	I begin by ingesting the EEM\_dwarf\_UBVIJHK\_colors\_Teff.txt (adding a synthetic data point at the high mass end for a 100$M_{\odot}$ star at $45000^{\circ} K$, per the footnote, and interpolating in between). I then simply plot the temperature data and (separately) the luminosities vs the mass data. Both plots show similar trends, but the luminosity grows much faster with increasing mass (covering almost 10 orders of magnitude over our mass range vs just over 1 dex for the temperature).\\
+
+\newpage 		  
+		  
+	\item %PROBLEM 4b
+	  	  Integrated Population Spectra:
+	  	  
+		  \begin{figure}[H]
+			  		\includegraphics[width=\linewidth]{hw1_p4b.png}
+			  		%\caption{}
+			  		\label{fig:fig8}
+		  \end{figure}
+		  
+%	Each spectra is read from the kp00\_*.txt file that is nearest in temperature to each star (from an evenly spaced grid (0.08, 100.0) $M_{\odot}$ with a width of 0.01$M_{\odot}$). The fluxes are converted to luminosities (as in (4a)) and multiplied by the wavelengths to get $\lambda L_{\lambda}$ (or, equivalently $\nu L_{\nu}$, if you prefer), then normalized by $L_{\odot, bol}$ and finally summed, weighted by the relative number fraction from the Salpeter MDF (from problem 3).\\
+
+	Each spectra is read from the kp00\_*.txt file that is nearest in temperature to each star (corresponding to an evenly spaced grid (0.08, 100.0) $M_{\odot}$ with a width of 0.01$M_{\odot}$ and with a floor of 3500K). The fluxes (interpolated between nearest datapoints by wavelength) are use as $\propto$ luminosities (with the assumption that the distances to the stars in the population is effectively the same and (obviously) much greater than the stellar radii) and multiplied by the wavelengths to get values $\propto$ $\lambda L_{\lambda}$ (or, equivalently $\nu L_{\nu}$, if you prefer), and finally summed, weighted by the relative number fraction from the Salpeter MDF (from problem 3)
+	
+		  
+\newpage 		  
+  	\item %PROBLEM 4c
+ 	  Integrated Population Spectra by Mass Range:
+ 	  
+			  \begin{figure}[H]
+  			  		\includegraphics[width=\linewidth]{hw1_p4c.png}
+  			  		%\caption{}
+  			  		\label{fig:fig9}
+			  \end{figure}
+			  
+			  
+	Here we have essentially the same plot as in (4b) but additionally sub-selected by mass range (as well as one plot with all stars included). The four mass ranges are those from (3b). The steps are otherwise identical to (4b). As in problem 3, we can clearly see the dominance of the high mass stars, noting that the weighted sum of all stars is almost replicated by just the $20^{+}$ $M_{\odot}$ stars (especially short-ward of $\sim$ 1000$\AA$).\\
+
+
+			  
+	\item %PROBLEM 4d
+		Aging Integrated Population Spectra by Mass Range :
+\newpage 
+			\begin{figure}[H]
+			  		\includegraphics[width=\linewidth]{hw1_p4d1.png}
+			  		%\caption{}
+			  		\label{fig:fig10}
+			\end{figure}
+			
+			\begin{figure}[H]
+			  		\includegraphics[width=\linewidth]{hw1_p4d2.png}
+			  		%\caption{}
+			  		\label{fig:fig11}
+			\end{figure}
+
+	In both plots, I simply repeat the steps of (4c), removing all stars that have aged off the Main Sequence after the reported time (as in problem 3e). Again, we see the integrated spectra is still mostly shaped by the most massive of the remaining stars (especially at shorter wavelengths), but the contributions of the far more numerous lighter stars becomes increasingly significant on the more red-ward end. (Note for easier comparison, I kept the scale of all plots the same.)\\
+
+	\item %PROBLEM 4e
+		Observations about population models:\\
+		
+		The basic shape of each spectra is that of a blackbody (ignoring the extra emission and absorption features), a bit smeared out since we have a range of temperatures. For the hotter stars, we can see additional features in the UV (such as a step drop off blue-ward of 916$\AA$) where the emission from cooler stars is far less (below the plotting limits). There are, perhaps, more absorption features in the cooler stars, particularly between 3000 and 10000 $\AA$, where the cooler surface temperature can allow for some molecules (e.g. TiO) and incomplete ionizations.\\
+		
+		The hottest stars dominate the spectra over all wavelength ranges. While their peak emission is in the UV, they are brighter at all wavelengths than the cooler, less massive stars. As the population ages however, and these massive stars die, the less massive stars, due to their shear dominance in numbers, start to become significant contributors to the spectra at longer wavelengths (red-ward of about 1 $\mu m$).\\
+		
+    
+    \end{enumerate}
+  
+  
+\end{enumerate}
+
+
+\end{document}
