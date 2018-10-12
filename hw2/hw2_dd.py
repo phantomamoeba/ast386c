@@ -499,12 +499,49 @@ def prob3b():
 
     #best_h = 259.63
 
+    # # fit scale
+    #d = data[288:594,168:640]
+    # max_count_core = np.max(d)
+    # best_h = h_init
+    # best_chi2 = 9e99
+    # best_scale = 4459
+    # for sc in range(best_scale-100,best_scale+100):
+    #     model = models.Sersic2D(amplitude=sc, r_eff=best_h,n=1.0,
+    #                             x_0=len(x)/2.,y_0=len(y)/2.,
+    #                             ellip=ellipticity,theta=(pa-90.)*np.pi/180.)
+    #     img = model(x, y)[288:594,168:640]
+    #
+    #     chi2, scale = chi_sqr2D(d, img, None)
+    #     print ("Scale", chi2,sc)
+    #
+    #     if chi2 < best_chi2:
+    #         best_chi2 = chi2
+    #         best_scale = sc
+    #
+    # print("Best Scale",best_chi2,best_scale)
+
+
+
+    #try scaling
+    # best_h = h_init
+    # best_chi2 = 9e99
+    # best_scale = 4459
+    # model = models.Sersic2D(amplitude=1, r_eff=best_h, n=1.0,
+    #                              x_0=len(x)/2.,y_0=len(y)/2.,
+    #                              ellip=ellipticity,theta=(pa-90.)*np.pi/180.)
+    # for sc in range(best_scale-100,best_scale+100):
+    #     img = model(x, y)  # .swapaxes(0,1)
+    #     img *= sc
+    #     chi2, scale = chi_sqr2D(d, img, None)
+    #     print ("Scale", chi2,sc)
+
 
     model = models.Sersic2D(amplitude=1, r_eff=best_h, n=1.0,
                             x_0=len(x) / 2., y_0=len(y) / 2.,
                             ellip=ellipticity, theta=(pa - 90.) * np.pi / 180.)
     img = model(x, y)  # .swapaxes(0,1)
     img *= max_count_core / np.max(img)
+
 
     plt.figure(figsize=(13, 4)) # 2 cols, 1row
 
@@ -570,6 +607,29 @@ def prob3c(data,model,image):
     plt.show()
     plt.close()
 
+
+
+def prob3e():
+    from scipy.optimize import curve_fit
+
+    def exponential(r, h, sigma_cent):
+        return sigma_cent * np.exp(-r / h)
+
+    sigma_r = [20.1,21.1,22.7,25.25] #4 values
+    r = [1.,2.,4.,8.] # values
+
+    parm, pcov = curve_fit(exponential, r, sigma_r)
+
+    print (parm)
+
+    plt.figure()
+    x = np.arange(0.01, 10.,0.01)
+    y = exponential(x,parm[0],parm[1])
+
+    plt.plot(x,y)
+    plt.scatter(r,sigma_r)
+    plt.show()
+    plt.close()
 
 
 
@@ -658,8 +718,10 @@ def main():
     #prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
     #prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
 
-    data, model, image = prob3b()
-    prob3c(data[288:594,168:640],model,image[288:594,168:640])
+    # data, model, image = prob3b()
+    # prob3c(data[288:594,168:640],model,image[288:594,168:640])
+
+    prob3e()
 
     exit(0)
 

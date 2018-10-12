@@ -183,7 +183,14 @@
    
    -or-
    
-   \hspace{10mm} $\Sigma (r)\ =\ \Sigma _{cent}$ exp[$-b_n \cdot (\frac{\displaystyle  r}{\displaystyle  h})^{(1/n)}-1$] where n = 1 \\
+   \hspace{10mm} $\Sigma (r)\ =\ \Sigma _{cent}$ exp[($\frac{\displaystyle  r}{\displaystyle  r_e})^{(1/n)}$] where n = 1
+   
+   -or- (more common form)
+   
+   \hspace{10mm} $\Sigma (r)\ =\ \Sigma _{cent}$ exp\{$-b_n [(\frac{\displaystyle  r}{\displaystyle r_{1/2}})^{(1/n)}-1]$\} where n = 1 and $b_n$ = 2n-$\frac{1}{3}$
+   
+   \hspace{10mm} (note: h = $r_e$ = $\frac{r_{1/2}}{ln(2)}$)\\
+   
   
    The model image is inclined per the value in (3a) and rotated counter-clockwise by the position angle ($10^{\circ}$ since the reference axis is itself rotated by $90^{\circ}$ counter-clockwise).\\
    
@@ -223,6 +230,8 @@
   
   This yields h (as $R_{1/2}$) = 11.9 kpc or (as $R_{e}$) = 17.1 kpc.\\
   
+  These numbers are not strictly unreasonable but do see high by maybe a factor of a few. I think a better approach would be an MCMC fit with inclination, scale length (h or $r_e$), scale factor (the multiplier to scale up the brightness from 1), and Sersic index as parameters to fit. In my method, the brightness scale factor is calculated from the scale length (so it is not a free fit) and the inclination and Sersic index are fixed. Although the residual is essentially unbiased (in that its mean is zero), it over fits the bulge brightness (and the bulge, by itself, would have a larger Sersic index) and under fits the disk (Sersic index closer to 1).\\
+  
   \item Surface Brightness Units Conversion \\%3d
     
   \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)} L_{\odot} pc^{-2}$ \\
@@ -255,7 +264,42 @@
   
    \item Analytic Surface Brightness and Luminosity \\%3e
    
-     \textcolor{red}{todo}
+   
+   The estimate for  $L_{tot} \approx 5\times10^{10} L_{\odot}$.\\
+   
+     First, I convert the $mag/arcsec^2$ to $L_{\odot}/pc^2$ units using the relationship from (3d) and radial distance from arcminutes to pc using the small angle approximation ($\theta = d/D$).\\
+     
+	Next, I use those four data points in the surface brightness equation from (3b) and from the resulting system of four equations, solve for $\Sigma_{cent} \approx 660$ and $h \approx 3500pc$.\\
+	
+	Lastly, I integrate over all radii (out to some limit, but with the declining surface brightness, we easily converge in less than 10h) as:
+	
+	\hspace{10mm} $L_{tot} = 2\pi \Sigma_{cent} \mathlarger{\int_{0}^{10h}} e^{-r/h}\ r dr$ 
+	
+
+	where the area element (dA) becomes that of an annulus ($2\pi rdr$) under the assumption that the galaxy is a pure disk and radially symmetric.\\  
+	     
+  
+  \end{enumerate}
+  
+  \item 
+  
+  \begin{enumerate}
+  
+  \item Most Surprising ...\\
+  
+  For me, I don't know that there is a single piece of information or technique that I find "most surprising", but there are two trends that I find surprising and distressing. First, it is surprising how much uncertainty is hidden in the narrative of galaxy formation that is generally presented as being well known (we know how gas forms stars, we know the mass of galaxies, we know how galaxies grow, etc). Second, it is somewhat distressing (though understandable since you have to assume something for lack of anything else) how single element or small datasets are globalized or used as the model for objects under very different conditions (i.e Milky Way dust model (or SMC dust model) or the "universal" IMF applied to high-z observations).\\
+  
+  
+  \item Important Issues ...
+	  \begin{enumerate}
+	  \item How galaxies collect the gas that fuels their growth/star formation? We now (think) we know where (all?) the baryons live and can see there is a large gas reservoir for galaxies to tap, but does most of the gas come in from cold flows or from the stripping of gas from minor mergers? And how do we cool that gas to the point where we can form stars on the time lines we expect? Since we mostly observe star light, understanding the star formation rates/history of galaxies from the onset of gas accretion would be, perhaps, the single best tool (or framework) for understanding the life-cycle of galaxies.\\
+	  
+	  \item What is the explanation of the relationship between SMBH and host galaxy (or at least bulge for spirals)? There is an obvious correlation between the mass of the central SMBH and the mass of the galaxy (or more tightly to the bulge mass in spirals) and it is clear that the two know about each other and co-evolve, but the sphere of influence of the SMBH is much smaller than even the scale length of the bulge. Understanding how/if the galaxy feeds the SMBH and how the SMBH might regulate star formation and gas accretion would go a long way to explaining the formation and evolution of both.\\
+	  
+	  \item When did reionization (significantly) begin and how did it proceed? This is effectively a question about what is the primary driver ... QSOs and AGN? high and sustained star formation in massive or dwarf galaxies? In all of the leading contenders, the source of the ionizing radiation is galaxies ... but which ones and what was the mechanism? Answering this question would answer much about how (and when) galaxies grow (and the stars they produce, the IMF, etc), how much dust they produce and how it is distributed, and how galaxies shape their environment (and how the environment influences the galaxies). 
+	  
+	  \end{enumerate}
+  
   
   \end{enumerate}
 
