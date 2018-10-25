@@ -182,6 +182,10 @@ def prob2a():
                         color='b', alpha=0.5,label="Approx B-band")
     plt.gca().add_patch(rec)
 
+    plt.gca().tick_params(axis='y', which='minor', left='on')
+    #lt.gca().set_xticks(list(ax.get_xticks()) + extraticks)
+    plt.gca().set_yticks(np.arange(0.0,1.1,0.1))
+
     plt.legend(loc='upper left', bbox_to_anchor=(0.02, 0.98), borderaxespad=0)
 
     #plt.show()
@@ -615,18 +619,23 @@ def prob3e():
     def exponential(r, h, sigma_cent):
         return sigma_cent * np.exp(-r / h)
 
-    sigma_r = [20.1,21.1,22.7,25.25] #4 values
-    r = [1.,2.,4.,8.] # values
+    #sigma_r = [20.1,21.1,22.7,25.25] #4 values
+    #r = [1.,2.,4.,8.] # values
 
-    parm, pcov = curve_fit(exponential, r, sigma_r)
+    sigma_r = [331.13,131.83,30.20,2.88] #4 values
+    r = [2730.,5470.,10940.,21870.] # values
+
+    parm, pcov = curve_fit(exponential, r, sigma_r, p0=[3430,600])
 
     print (parm)
 
     plt.figure()
-    x = np.arange(0.01, 10.,0.01)
+    x = np.arange(1, 100000.,100)
     y = exponential(x,parm[0],parm[1])
+    y2 = exponential(x,3430,600)
 
     plt.plot(x,y)
+    plt.plot(x,y2)
     plt.scatter(r,sigma_r)
     plt.show()
     plt.close()
@@ -713,7 +722,7 @@ def main():
         # fig.tight_layout()
         # plt.show()
 
-    #prob2a()
+    prob2a()
     #prob2b(integrated_spectra_0,integrated_spectra_500,integrated_spectra_1000)
     #prob2c(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)
     #prob2d(integrated_spectra_0, integrated_spectra_500, integrated_spectra_1000)

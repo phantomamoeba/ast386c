@@ -86,7 +86,7 @@
 	       		
 	 Here, I apply the attenuation factors from (2a) to the (total) integrated spectra from HW\#1 resulting in 9 curves: 3 ages $\times$ 3 attenuations, (0 yr, 500 Myr, 1 Gyr) $\times$ (none, $E(B-V)=0.1$, $E(B-V)=1.0$). To multiply with the attenuation data, the integrated spectra were truncated and aligned on the same wavelength grid.
     
-    
+    \newpage
     %%2(c)   
     \item g - r color for each spectra\\
     
@@ -117,7 +117,8 @@
 	\hspace{10mm} $ m_{g-r} = -2.5 log_{10}(\dfrac{f_g}{f_r})$\\
 	
 	Both aging and dust attenuation push the color toward the red (in aging, through the loss of the more massive, blue stars and in dust attenuation through the preferential reduction of bluer frequencies). There does not seem to be a good way to disentangle aging affects from dust attenuation, at least not with only the color from these two filters. With additional filters, we could probe the longer wavelength spectra where we start to see bigger differences between the two effects. An older population with little dust would not show the same bump in the infra-red as a younger, heavily obscured population. Basically, for an older population, the bluer energy is simply gone (no hot stars to produce it), but in a younger, dust obscured population the bluer energy is re-radiated (by the heated dust) in the infra-red.
-    
+	
+    \newpage
 
 	%%2(d)    
     \item SED Fitting\\
@@ -168,7 +169,7 @@
   
   Error propagation via:  $\lvert \delta Q \rvert\ =\ \lvert \frac{\displaystyle dq}{\displaystyle dx} \rvert \delta x$ \\ 
   
-  
+  \newpage
   \item Surface Brightness %3b
   
     		\begin{figure}[H]
@@ -200,6 +201,7 @@
    
    The optimal h is found to be 259.63 pixels as a half-light radius (or 374.57 pixels as 1/e radius, noting that $R_{1/2}\ = R_e \cdot ln(2)$)\\
    
+   \newpage
    \item Surface Brightness Residuals\\ %3c
    
    Note that most of (3c) was actually executed as part of (3b)
@@ -228,9 +230,9 @@
   
   \hspace{10mm} h[kpc] = $9400 [kpc] \cdot \frac{h["]}{3600} \cdot \frac{\pi}{180^{\circ}}$ \\
   
-  This yields h (as $R_{1/2}$) = 11.9 kpc or (as $R_{e}$) = 17.1 kpc.\\
+  This yields h (as $R_{1/2}$) = 11.9 kpc (or as $R_{e}$ = 17.1 kpc).\\
   
-  These numbers are not strictly unreasonable but do see high by maybe a factor of a few. I think a better approach would be an MCMC fit with inclination, scale length (h or $r_e$), scale factor (the multiplier to scale up the brightness from 1), and Sersic index as parameters to fit. In my method, the brightness scale factor is calculated from the scale length (so it is not a free fit) and the inclination and Sersic index are fixed. Although the residual is essentially unbiased (in that its mean is zero), it over fits the bulge brightness (and the bulge, by itself, would have a larger Sersic index) and under fits the disk (Sersic index closer to 1).\\
+  These numbers are not completely unreasonable but do see high by maybe a factor of a few. I think a better approach would be an MCMC fit with inclination, scale length (h or $r_e$), scale factor (the multiplier to scale up the brightness from 1), and Sersic index as parameters to fit. In my method, the brightness scale factor is calculated from the scale length (so it is not a free fit) and the inclination and Sersic index are fixed. Although the residual is essentially unbiased (in that its mean is zero), it over fits the bulge brightness (and the bulge, by itself, would have a larger Sersic index) and under fits the disk (Sersic index closer to 1).\\
   
   \item Surface Brightness Units Conversion \\%3d
     
@@ -260,23 +262,27 @@
   
   \hspace{10mm} $\Sigma \ = 10^{0.4(26.4- \mu)}$ \\
   
-  
+  \newpage
   
    \item Analytic Surface Brightness and Luminosity \\%3e
    
    
-   The estimate for  $L_{tot} \approx 5\times10^{10} L_{\odot}$.\\
+   The estimate for  $L_{tot} \approx 4.5\times10^{10} L_{\odot}$.\\
    
      First, I convert the $mag/arcsec^2$ to $L_{\odot}/pc^2$ units using the relationship from (3d) and radial distance from arcminutes to pc using the small angle approximation ($\theta = d/D$).\\
      
-	Next, I use those four data points in the surface brightness equation from (3b) and from the resulting system of four equations, solve for $\Sigma_{cent} \approx 660$ and $h \approx 3500pc$.\\
+	Next, I use those four data points in the surface brightness equation from (3b) and from the resulting system of four equations, solve for $\Sigma_{cent} \approx 660$ and $h \approx 3500pc$. These are estimates from variable substitution. I then use these as initial values to "best" fit a curve to the four points (note that without uncertainties in the data and with only four points, I have restricted the results to a single significant digit). The "best" fit parameters found are:\\
+	
+	\hspace{10mm} $\Sigma_{cent} \approx 800 L_{\odot}/pc^{2}$ \hspace{5mm}  $h \approx 3000 pc$\\
 	
 	Lastly, I integrate over all radii (out to some limit, but with the declining surface brightness, we easily converge in less than 10h) as:
 	
-	\hspace{10mm} $L_{tot} = 2\pi \Sigma_{cent} \mathlarger{\int_{0}^{10h}} e^{-r/h}\ r dr$ 
+	\hspace{10mm} $L_{tot} = 2\pi \Sigma_{cent} \mathlarger{\int_{0}^{10h}} e^{-r/h}\ r dr \approx 4.5\times10^{10} L_{\odot} $ 
 	
 
 	where the area element (dA) becomes that of an annulus ($2\pi rdr$) under the assumption that the galaxy is a pure disk and radially symmetric.\\  
+	
+	The final results (top) are high by a factor of a few due to the limited data, lack of uncertainties, and the fit to a pure disk (Sersic index of 1), which will result in radial surface luminosity curve that is more shallow than that of a higher index (in other words, it will not have the rapid fall-off from the bulge).
 	     
   
   \end{enumerate}
@@ -287,7 +293,7 @@
   
   \item Most Surprising ...\\
   
-  For me, I don't know that there is a single piece of information or technique that I find "most surprising", but there are two trends that I find surprising and distressing. First, it is surprising how much uncertainty is hidden in the narrative of galaxy formation that is generally presented as being well known (we know how gas forms stars, we know the mass of galaxies, we know how galaxies grow, etc). Second, it is somewhat distressing (though understandable since you have to assume something for lack of anything else) how single element or small datasets are globalized or used as the model for objects under very different conditions (i.e Milky Way dust model (or SMC dust model) or the "universal" IMF applied to high-z observations).\\
+  For me, I don't know that there is a singular piece of information or technique that I find "most surprising", but there are two trends that I find surprising and distressing. First, it is surprising how much uncertainty is hidden in the narrative of galaxy formation that is generally presented as being well known (we know how gas forms stars, we know the mass of galaxies, we know how galaxies grow, etc). Second, it is somewhat distressing (though understandable since you have to assume something for lack of anything else) how single element or small datasets are globalized or used as the model for objects under very different conditions (i.e Milky Way dust model (or SMC dust model) or the "universal" IMF applied to high-z observations). The danger of drawing poor conclusions is compounded further at each additional step as more (potentially incorrect) assumptions are stacked on the previous ones.\\
   
   
   \item Important Issues ...
