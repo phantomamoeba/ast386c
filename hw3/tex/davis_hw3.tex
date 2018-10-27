@@ -19,6 +19,7 @@
 \usepackage{amsmath}
 \usepackage{relsize}
 \usepackage{color}
+\usepackage{caption}
 \def\degree{\,^{\circ}}
 
 
@@ -57,7 +58,7 @@
 	
 		\begin{figure}[H]
 				\includegraphics[width=\linewidth]{line_flux.png}
-				\caption{Line Flux for $H_{\alpha}$  22789 $\AA$ (observed) [supplemental ELiXer output] }
+				\caption{Line Flux for $H_{\alpha}$  22789 $\AA$ (observed) [supplemental ELiXer output] \\ Solid green curve is the MCMC fit and green shading covers the $1\sigma$ uncertainty. \\ Solid blue curve is the least squares best fit. Solid black line is the raw data. }
 				\label{fig:int_line_flux}
 		\end{figure}
 	
@@ -135,16 +136,22 @@
 	 
 	 and the integrated line flux for $H_{\alpha}$ from the fit in (1a):\\
 		 
-	  $f_{H_{\alpha}} = 1.1735^{+0.4}_{-0.3} \times 10^{-16} [erg\ s^{-1}\ cm^{-2}]$\\
+	 \hspace{10mm} $f_{H_{\alpha}} = 1.1735^{+0.4}_{-0.3} \times 10^{-16} [erg\ s^{-1}\ cm^{-2}]$\\
 	 
 	 converted to luminosity by:\\
 	 
 	  \hspace{10mm} $L\ =\ f \cdot 4\pi \cdot D^{2}_{L}$\\
 	  
 	  
-	  I find $SFR [M_{\odot}\ yr^{-1}]\ = 7.9 \times 10^{-42} \cdot 1.17 \times 10^{-16} erg\ s^{-1}\ cm^{-2} \cdot 4\pi \cdot (2.01158 \times 10^{10} pc \cdot 3.086 \times 10 ^{18} cm/pc)^2 \approx 44.8 M_{\odot}/yr$ \\
+	  I find $SFR [M_{\odot}\ yr^{-1}]\ = 7.9 \times 10^{-42} \cdot 1.1735 \times 10^{-16} erg\ s^{-1}\ cm^{-2} \cdot 4\pi \cdot (2.01158 \times 10^{10} pc \cdot 3.086 \times 10 ^{18} cm/pc)^2 \approx 45\ M_{\odot}/yr$ \\
 	  
-	  This is clearly rapidly forming stars, but seems entirely plausible at this redshift and mass (could be bursty and could be a merger, though that might likely be even higher SFR).
+	  This is clearly rapidly forming stars, but seems entirely plausible at this redshift and mass (could be bursty, secular star formation or could be driven by a merger, though one might expect an even higher SFR in that case).\\
+	  
+	  
+	  
+	  \item Total Stellar Mass
+	  \\
+	  
 	 
 	 
 	 

@@ -135,13 +135,13 @@ def prob1a():
     #...
     #if ( abs(fit_peak - raw_peak) > (raw_peak * 0.25) ):     #0.20 to 0.25
 
-    G.DEBUG_SHOW_GAUSS_PLOTS = True
+    #G.DEBUG_SHOW_GAUSS_PLOTS = True
     G.DISPLAY_ABSORPTION_LINES = False
     G.MAX_SCORE_ABSORPTION_LINES = 0.0  # the most an absorption line can contribute to the score (set to 0 to turn off)
 
     spec_obj = elixer_spectrum.Spectrum()  # todo: needs spec_obj.identifier and spec_obj.plot_dir
 
-    spec_obj.set_spectra(NIRSpectrum_AA, NIRSpectrum_cgs,
+    spec_obj.set_spectra(NIRSpectrum_AA, NIRSpectrum_cgs*100.0,
                          errors=None, central=22789.1429788, values_units=1)  # ,fit_min_sigma=2.0)
 
  #   cw = spec_obj.find_central_wavelength()
