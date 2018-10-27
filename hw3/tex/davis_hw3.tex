@@ -51,13 +51,19 @@
 	
     \begin{figure}[H]
 		\includegraphics[width=\linewidth]{prob1a_1.png}
-		\caption{}
+		\caption{LIR Spectrum (observed)}
 		\label{}
 	\end{figure}
 	
+		\begin{figure}[H]
+				\includegraphics[width=\linewidth]{line_flux.png}
+				\caption{Line Flux for $H_{\alpha}$  22789 $\AA$ (observed) [supplemental ELiXer output] }
+				\label{fig:int_line_flux}
+		\end{figure}
+	
 	\begin{figure}[H]
 			\includegraphics[width=\linewidth]{prob1a_2.png}
-			\caption{}
+			\caption{Millimeter Spectrum (observed)}
 			\label{fig:gal_mm_spec}
 	\end{figure}
 	  
@@ -122,6 +128,26 @@
 	 
 	 
 	 \item SFR Estimate %1d
+	 \\
+	 Using the following equation from Kennicutt, Tamblyn, and Congdon (1994):\\
+	 
+	 \hspace{10mm} $SFR [M_{\odot}\ yr^{-1}]\ =\ 7.9 \times 10^{-42}\ L_{H_{\alpha}} [erg s^{-1}]$\\
+	 
+	 and the integrated line flux for $H_{\alpha}$ from the fit in (1a):\\
+		 
+	  $f_{H_{\alpha}} = 1.1735^{+0.4}_{-0.3} \times 10^{-16} [erg\ s^{-1}\ cm^{-2}]$\\
+	 
+	 converted to luminosity by:\\
+	 
+	  \hspace{10mm} $L\ =\ f \cdot 4\pi \cdot D^{2}_{L}$\\
+	  
+	  
+	  I find $SFR [M_{\odot}\ yr^{-1}]\ = 7.9 \times 10^{-42} \cdot 1.17 \times 10^{-16} erg\ s^{-1}\ cm^{-2} \cdot 4\pi \cdot (2.01158 \times 10^{10} pc \cdot 3.086 \times 10 ^{18} cm/pc)^2 \approx 44.8 M_{\odot}/yr$ \\
+	  
+	  This is clearly rapidly forming stars, but seems entirely plausible at this redshift and mass (could be bursty and could be a merger, though that might likely be even higher SFR).
+	 
+	 
+	 
 	
  
    \end{enumerate}
