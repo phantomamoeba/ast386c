@@ -14,7 +14,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 \def\Vhrulefill{\leavevmode\leaders\hrule height 0.7ex depth \dimexpr0.4pt-0.7ex\hfill\kern0pt}
-\graphicspath{ {/home/dustin/code/python/ast386c_galaxies/hw2/out/} }
+\graphicspath{ {/home/dustin/code/python/ast386c_galaxies/hw3/out/} }
 \usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
 \usepackage{amsmath}
 \usepackage{relsize}
@@ -46,8 +46,30 @@
 \item  %PROBLEM 1
 	
 	\begin{enumerate}
-	%%1(a)   
-
+	%%1(a) 
+	\item Red Shift\\
+	
+    \begin{figure}[H]
+		\includegraphics[width=\linewidth]{prob1a_1.png}
+		\caption{}
+		\label{}
+	\end{figure}
+	
+	\begin{figure}[H]
+			\includegraphics[width=\linewidth]{prob1a_2.png}
+			\caption{}
+			\label{}
+	\end{figure}
+	  
+	Here I make use of existing code I wrote for another project to analyze spectra and identify emission lines. In short, the code searches for the basic emission shape (a peak) and then fits a Gaussian (with some limited constraints on the parameters) and may accept or reject the "line" based on the results (reasonable $\sigma$, SNR, etc). The strongest line is then assumed to be (in turn) each of the possible lines provided in the keylines.txt file, the redshift calculated and then, using that redshift, the other lines in the spectra are searched for matches to additional lines in the keylines.txt file. The solution with the highest score (based on number of matched lines and the strength of each of those lines) is selected.\\
+	
+	We can see the best solution at $z = 2.472$, which finds H$_{\alpha}$ and two NaII lines in the NIR and corresponds to the CO(3-2) transition in the millimeter.\\
+	
+	Redshift is computed as:\\
+	
+	\hspace{10mm} $1 + z = \frac{\displaystyle\lambda_{obs}}{\displaystyle \lambda_{rest}} = \frac{\displaystyle\nu_{rest}}{\displaystyle \nu_{obs}}$\\
+	
+	\item Gas Mass%1b galaxy gas mass in M_sun
  
    \end{enumerate}
 
