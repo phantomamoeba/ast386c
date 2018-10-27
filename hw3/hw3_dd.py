@@ -195,7 +195,7 @@ def prob1a():
     plt.legend(loc='upper right', bbox_to_anchor=(0.98, 0.98), borderaxespad=0)
 
     plt.savefig(op.join(OUTDIR,"prob1a_2.png"))
-    #plt.show()
+   # plt.show()
     plt.close()
 
 

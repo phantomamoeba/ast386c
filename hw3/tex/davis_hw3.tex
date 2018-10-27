@@ -58,7 +58,7 @@
 	\begin{figure}[H]
 			\includegraphics[width=\linewidth]{prob1a_2.png}
 			\caption{}
-			\label{}
+			\label{fig:gal_mm_spec}
 	\end{figure}
 	  
 	Here I make use of existing code I wrote for another project to analyze spectra and identify emission lines. In short, the code searches for the basic emission shape (a peak) and then fits a Gaussian (with some limited constraints on the parameters) and may accept or reject the "line" based on the results (reasonable $\sigma$, SNR, etc). The strongest line is then assumed to be (in turn) each of the possible lines provided in the keylines.txt file, the redshift calculated and then, using that redshift, the other lines in the spectra are searched for matches to additional lines in the keylines.txt file. The solution with the highest score (based on number of matched lines and the strength of each of those lines) is selected.\\
@@ -69,7 +69,60 @@
 	
 	\hspace{10mm} $1 + z = \frac{\displaystyle\lambda_{obs}}{\displaystyle \lambda_{rest}} = \frac{\displaystyle\nu_{rest}}{\displaystyle \nu_{obs}}$\\
 	
+	
+	
 	\item Gas Mass%1b galaxy gas mass in M_sun
+	\\
+	
+	Below, I use the following equations and (since we have nothing else to go on), will assume the gas is thermalized so we can use the luminosity for the higher J transition (3-2) in place of the lower (1-0) transition.\\
+	
+	\hspace{10mm} $L^{'}_{CO} = 3.25 \times 10^{7}\ (S_{CO} \Delta v)\ \nu_{obs}^{-2}\ D_L^2\ (1+z)^{-3}$
+	
+	\hspace{10mm} $M_{H_2} = \alpha_{CO}\ L^{'}_{CO}$\\
+	
+	Here I set the velocity zero to the observed frequency of CO(3-2) then estimate the FWHM (see Figure \ref{fig:gal_mm_spec}) by eye (note: given the uncertainties in the following estimates and conversions, the 'by eye' errors are relatively small) and convert that into a dispersion in km/s. The peak flux ($S_{CO} = 0.9722\ mJy$) is read directly from the mmspectrum\_hw3.txt file and confirmed against Figure \ref{fig:gal_mm_spec}.\\
+	
+	\hspace{10mm} $v_{\sigma} = \frac{\displaystyle \Delta \nu}{\displaystyle \nu_{obs}} \cdot c = \frac{\displaystyle 135.7MHz}{\displaystyle 99574.4MHz} \cdot 3 \times 10^{5}km/s \approx 409 km/s$\\
+	
+	I use a cosmological calculator to compute the luminosity distance ($D_L$) as 20115.8 Mpc, assuming a concordance cosmology with $H_0$ = 70km/s/Mpc and $\Omega_m$ = 0.3 and $\Omega_{\Lambda}$ = 0.7.\\
+	
+	Plugging in all the values, I find:\\
+	
+	$L^{'}_{CO} = 3.25 \times 10^{7}\cdot(0.0009722 Jy \cdot 409 km/s)\cdot(99.574 GHz)^{-2}\cdot(20115.8 Mpc)^2\cdot(1+2.472)^{-3}\ \approx \ 1.26 \times 10^{10}\ K\ km/s\ pc^2$\\
+	
+	Finally, I need to choose a value for $\alpha_{CO}$ which is generally between 0.8 and 10 $M_{\odot} (K\ km/s\ pc^2)^{-1}.$ For the moment, to keep the math simple, I choose $\alpha_{CO}$ = 1, and will refine that choice based on the dynamical mass estimated in the next problem. \\
+	
+	This results in a tentative estimate for the mass of gas in this galaxy of roughly $1.26 \times 10^{10} M_{\odot}$\\
+	
+	
+	
+	
+	
+	\item Dynamical Mass%1c
+	\\
+
+	Using the following equations and assuming (the typical) $<sin^2i>\ =\ 2/3$:
+	
+	\hspace{10mm} $M_{dyn}\ =\ \frac{\displaystyle C\ R\ \sigma^2}{\displaystyle  G} $ where C = \{2.1 for disk, 4 for a merger\} \\
+	
+	\hspace{10mm} $FWHM\ =\ 2.35\ \sigma$\\
+	
+	and, again, using the cosmological calculator as in (1b), compute $r_{eff} = 1.2" = 9.708 kpc$\\
+	
+	I find (assuming a disk for lack of other information to suggest otherwise):\\
+	
+	 $M_{dyn} = \frac{\displaystyle 2.1 \cdot 9.708 kpc \cdot (409km\ s^{-1}/2.35)^2}{\displaystyle 6.674 \times 10^{-11} m^3 kg^{-1} s^{-2}} \times \frac{\displaystyle 3.086\times 10^{19} m}{\displaystyle kpc} \times \frac{\displaystyle 10^{6} m^2}{\displaystyle km^2} \times \frac{\displaystyle M_{\odot}}{\displaystyle 1.99 \times 10^{30} kg} $\\
+	 
+	 $M_{dyn} \approx 1.43 \times 10^{11} M_{\odot} / < sin^2i >\ =\ 2.15 \times 10^{11} M_{\odot}$\\
+	 
+	 This is consistent with a low value for $\alpha_{CO}$ as assumed in (1b), limiting it to a maximum of about 1.7, at which point the gas mass would exceed the dynamical mass (which is nonsensical).\\
+	 
+	 
+	 
+	 
+	 
+	 \item SFR Estimate %1d
+	
  
    \end{enumerate}
 
