@@ -83,6 +83,8 @@ NIRSpectrum_cgs = [] #erg s^-1 cm^-2 AA^-1
 MMSpectrum_GHz = []
 MMSpectrum_Jy = []
 
+PhotDict = {} #top key = filter from photometry.txt, entry = dict as ['flux'] ['err'] and ['wav']
+
 ##################################
 #Support Functions
 ##################################
@@ -98,6 +100,34 @@ def read_NIRSpectrum():
 def read_MMSpectrum():
     freq, flux  = np.loadtxt(fname=op.join(BASEDIR,"mmspectrum_hw3.txt"),comments='#',dtype=float,unpack=True)
     return np.array(freq), np.array(flux)
+
+def read_photometry():
+    #all on one line
+    filters = {}
+    with open(op.join(BASEDIR,"photometry.txt"),'r') as f:
+
+        keys = f.readline().split()
+        keys = keys[1:] #get rid of the leading #
+        vals = f.readline().split()
+
+    wav = np.loadtxt(fname=op.join(BASEDIR,"filters.dat"),comments='#',dtype=float,unpack=False,usecols=1)
+
+    j = 0
+    for i in range(0,len(vals),2):
+
+        d = {}
+        d['flux'] = float(vals[i])
+        d['err'] = float(vals[i+1])
+        d['wav'] = float(wav[j])
+
+        filters[keys[i]] = d
+        j += 1
+
+
+    return filters
+
+#    out = np.loadtxt(fname=op.join(BASEDIR,"photometry.txt"),comments='',dtype=float,unpack=False)
+
 
 def Fnu2Flam(freq,flux):
     return (flux * freq ** 2)/c_const
@@ -203,6 +233,8 @@ def main():
     global  NIRSpectrum_AA , NIRSpectrum_cgs, MMSpectrum_GHz, MMSpectrum_Jy
     NIRSpectrum_AA,  NIRSpectrum_cgs = read_NIRSpectrum()
     MMSpectrum_GHz, MMSpectrum_Jy = read_MMSpectrum()
+
+    PhotDict = read_photometry()
 
     G.logging.basicConfig(filename="hw3.log", level=G.LOG_LEVEL, filemode='w')
     plt.switch_backend('QT4Agg')
